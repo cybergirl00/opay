@@ -33,6 +33,13 @@ const userSchema = new mongoose.Schema({
 });
 const User = mongoose.model('User', userSchema);
 
+const cardSchema = new mongoose.Schema({
+    userId:  { type: String, required: true },
+    cardRef:  { type: String, required: true },
+});
+
+const Card = mongoose.model("Card", cardSchema)
+
 // Create a Flutterwave Subaccount
 app.post('/create-subaccount', async (req, res) => {
     const { email, firstName, lastName, phone } = req.body;
@@ -76,6 +83,18 @@ app.post('/users', async (req, res) => {
     } catch (error) {
         console.error('Error saving user:', error);
         res.status(500).json({ error: 'Failed to add user to database' });
+    }
+});
+
+app.post('/create-card', async (req, res) => {
+    const { userId, cardRef } = req.body;
+    try {
+        const newCard = new Card({ userId, cardRef });
+        await newCard.save();
+        res.status(201).json({ message: 'Card created successfully' });
+    } catch (error) {
+        console.error('Error creating card:', error);
+        res.status(500).json({ error: 'Failed to create card' });
     }
 });
 

@@ -2,6 +2,7 @@ import { StyleSheet, Text, Touchable, TouchableOpacity, View } from 'react-nativ
 import React from 'react'
 import { transfers, vtu } from '@/lib/data'
 import FontAwesome from '@expo/vector-icons/FontAwesome'
+import { router } from 'expo-router'
 
 const Actions = () => {
   return (
@@ -28,7 +29,9 @@ const Actions = () => {
          <View className='p-2 w-auto border border-gray-50 bg-gray-50 rounded-md '>
       <View className='flex flex-row flex-wrap pt-5 items-center justify-center gap-[15%]'>
         {vtu.map((item) => ( 
-            <TouchableOpacity className='gap-2' key={item.id}>
+            <TouchableOpacity className='gap-2' key={item.id}
+            onPress={() => router.push(item.to)}
+            >
                 <View className='bg-green-100 w-auto h-auto p-3 justify-center items-center rounded-full'>
                     <FontAwesome name={item.icon} size={20} color={'#02bb86'} />
                 </View>

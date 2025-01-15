@@ -1,4 +1,4 @@
-import { View, Text } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { useUser } from '@clerk/clerk-expo';
 import LoadingModal from '@/components/LoadingModal';
@@ -6,25 +6,31 @@ import Header from '@/components/home/Header';
 import WidthWrapper from '@/components/WidthWrapper';
 import Banner from '@/components/home/Banner';
 import Actions from '@/components/home/Actions';
+import { useUserData } from '@/lib/zustand';
 
 const Home = () => {
   const { user } = useUser();
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState(null);
 
+  const setData = useUserData((state) => state.setData)
+  const storedata = useUserData((state) => state.data)
+  // console.log('This is the data from strore' + storedata)
   useEffect(() => {
     const getUser = async () => {
       if (!user) return;
   
       try {
-        const response = await fetch(`https://6f99-197-211-53-110.ngrok-free.app/get-user?clerkId=${user.id}`, { // Send clerkId as query parameter
+        const response = await fetch(`https://8728-197-211-63-167.ngrok-free.app/get-user?clerkId=${user.id}`, { // Send clerkId as query parameter
           method: 'GET', 
         });
+
+        console.log(response);
   
         if (response.ok) {
           const data = await response.json();
-          setUserData(data); // Set the user data in state
-          console.log(data)
+          setUserData(data); 
+          setData(data)
         } else {
           console.error('Failed to fetch user data');
         }
@@ -39,7 +45,7 @@ const Home = () => {
   }, [user]);
   
 
-  if (loading || !userData) {
+  if (loading || !storedata) {
     return <LoadingModal />;
   }
 
@@ -48,9 +54,10 @@ const Home = () => {
      <WidthWrapper>
      <Header firstName={userData?.firstName} />
 
+     <ScrollView showsVerticalScrollIndicator={false}>
      <Banner accountref={userData.accountRef} />
-
      <Actions />
+     </ScrollView>
      </WidthWrapper>
     </View>
   );

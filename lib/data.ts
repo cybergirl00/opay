@@ -1,3 +1,7 @@
+import airtel from '@/assets/images/airtel.png'
+import glo from '@/assets/images/glo.png'
+import mtn from '@/assets/images/mtn.png'
+import mobile from '@/assets/images/9mobile.png'
 export const transfers = [
     {
         id: 1,
@@ -21,7 +25,8 @@ export const vtu = [
     {
         id: 1,
         title: 'Airtime',
-        icon: 'mobile-phone'
+        icon: 'mobile-phone',
+        to: '/airtime'
     },
     {
         id: 2,
@@ -58,3 +63,77 @@ export const formattedCurrency = (amount: number): string => {
     }).format(amount)}`;
 };
 
+
+
+export const formatDate = (dateString: any) => {
+    const date = new Date(dateString);
+    
+    // Extract the components of the date
+    const month = date.toLocaleString('default', { month: 'short' }); // 'Jan', 'Feb', etc.
+    const day = date.getDate();
+    const year = date.getFullYear();
+    
+    // Add suffix for the day (e.g., 'st', 'nd', 'rd', 'th')
+    const daySuffix = (day: any) => {
+      if (day > 3 && day < 21) return 'th'; // Special case for 11th to 13th
+      switch (day % 10) {
+        case 1: return 'st';
+        case 2: return 'nd';
+        case 3: return 'rd';
+        default: return 'th';
+      }
+    };
+    
+    return `${month} ${day}${daySuffix(day)}, ${year}`;
+  };
+
+
+  export const providers = [
+    {
+        id: 1,
+        name: 'Airtel',
+        icon: airtel
+    },
+    {
+        id: 2,
+        name: '9Mobile',
+        icon: mobile
+    },
+    {
+        id: 3,
+        name: 'Glo',
+        icon: glo
+    },
+    {
+        id: 4,
+        name: 'MTN',
+        icon: mtn
+    },
+  ]
+
+  export const airtimePlans = [
+    {
+        id: 1,
+        price: 50
+    },
+    {
+        id: 2,
+        price: 100
+    },
+    {
+        id: 3,
+        price: 200
+    },
+    {
+        id: 4,
+        price: 500
+    },
+    {
+        id: 5,
+        price: 1000
+    },
+    {
+        id: 6,
+        price: 2000
+    },
+  ]

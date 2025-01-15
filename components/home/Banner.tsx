@@ -2,11 +2,15 @@ import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import FontAwesome from '@expo/vector-icons/FontAwesome'
 import axios from 'axios';
-import { formattedCurrency } from '@/lib/data';
+import { formatDate, formattedCurrency } from '@/lib/data';
+import { useUserData } from '@/lib/zustand';
+import { router } from 'expo-router';
 
 const Banner = ({ accountref }: { accountref: string}) => {
   const [hidebalance, setHidebalance] = useState(true);
-  const [Balance, setBalance] = useState(0)
+  const [Balance, setBalance] = useState(0);
+  const [transactions, setTransactions] = useState([])
+  const userData = useUserData((state) => state.data)
 
   useEffect(() => {
     const getBalance = async () => {
@@ -21,7 +25,7 @@ const Banner = ({ accountref }: { accountref: string}) => {
         );
         const fetchedBalance = response.data.data.available_balance; 
         setBalance(fetchedBalance);
-        console.log(fetchedBalance)
+        // console.log(fetchedBalance)
       } catch (error) {
         console.error('Error fetching balance:', error);
       }
@@ -29,6 +33,31 @@ const Banner = ({ accountref }: { accountref: string}) => {
 
     getBalance();
   }, [accountref]);
+
+
+  useEffect(() => {
+    const getTransaction = async () => {
+      try {
+        const response = await axios.get(
+          `https://api.flutterwave.com/v3/payout-subaccounts/${userData.accountRef}/transactions?fetch_limit=1`, 
+          {
+            headers: {
+              "Authorization": "Bearer FLWSECK-b775d93a3b14a0be4427b31a3f03cd4a-19461e011d9vt-X",  // Replace with your correct API key
+              "Content-Type": "application/json",
+            }
+          }  
+        );
+        setTransactions(response.data.data.transactions); 
+     
+      } catch (error) {
+        console.error('Error fetching transaction data:', error);
+      }
+    };
+  
+    getTransaction();
+  }, [userData?.accountRef]); // Add userData?.accountRef as dependency if it changes
+  
+  
   
   return (
     <View className="pt-6">
@@ -46,7 +75,7 @@ const Banner = ({ accountref }: { accountref: string}) => {
             </TouchableOpacity>
           </View>
 
-          <TouchableOpacity className='flex-row  items-center gap-2'>
+          <TouchableOpacity className='flex-row  items-center gap-2' onPress={() => router.push('/(tabs)/transactions')}>
             <Text className="text-white text-[10px] ">Transaction History</Text>
             <FontAwesome name='angle-right' color={'white'} />
           </TouchableOpacity>
@@ -74,6 +103,59 @@ const Banner = ({ accountref }: { accountref: string}) => {
         </View>
         </View>
       </View>
+
+      {!hidebalance && (
+  <View className="pt-4 p-1">
+    <View>
+      {transactions.slice(0, 2).map((item, index) => ( // Limit to only the first two transactions
+        <TouchableOpacity 
+          key={index} 
+          className="flex flex-row p-2 border-b border-gray-200"
+           onPress={() =>
+              router.push({
+              pathname: '/(tabs)/transaction-details',
+              params: {
+               remarks: item.remarks,
+             amount: item.amount,
+             transactionNo: item.refrence,
+              date: item.date,
+              },
+              })
+              }
+        >
+          {/* Left Section: Icon and Details */}
+          <View className="flex flex-row items-center gap-3 w-[70%]">
+            {/* Transaction Type Icon */}
+            <View className={`p-2 rounded-full ${item?.type === 'D' ? 'bg-red-100' : 'bg-green-100'}`}>
+              {item?.type === 'D' ? (
+                <FontAwesome name="arrow-down" color="red" size={16} />
+              ) : (
+                <FontAwesome name="arrow-up" color="green" size={16} />
+              )}
+            </View>
+
+            {/* Transaction Details */}
+            <View>
+              <Text className="text-[10px] font-medium text-gray-700">{item?.remarks || 'No description'}</Text>
+              <Text className="text-[10px] text-gray-500">{formatDate(item.date)}</Text>
+            </View>
+          </View>
+
+          {/* Right Section: Amount and Status */}
+          <View className="flex items-end justify-center w-[30%]">
+            <Text 
+              className={`text-[12px] font-semibold ${item.type === 'C' ? 'text-green-500' : 'text-red-500'}`}
+            >
+              {item.type === 'C' ? '+' : '-'}{formattedCurrency(item?.amount ?? 0)}
+            </Text>
+            <Text className="text-[10px] text-gray-500 font-medium">Successful</Text>
+          </View>
+        </TouchableOpacity>
+      ))}
+    </View>
+  </View>
+)}
+
     </View>
   )
 }

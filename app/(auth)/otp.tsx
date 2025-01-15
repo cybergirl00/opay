@@ -42,7 +42,7 @@ const OtpScreen = () => {
     try {
         // Step 1: Create a customer on Paystack
         const response = await axios.post(
-            'https://6f99-197-211-53-110.ngrok-free.app/create-subaccount',
+            'https://8728-197-211-63-167.ngrok-free.app/create-subaccount',
             {
                 email,
                firstName,
@@ -52,7 +52,7 @@ const OtpScreen = () => {
         );
 
         console.log(response)
-        await axios.post('https://6f99-197-211-53-110.ngrok-free.app/users', {
+        await axios.post('https://8728-197-211-63-167.ngrok-free.app/users', {
             email,
             clerkId,
             firstName,

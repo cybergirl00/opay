@@ -5,6 +5,9 @@ import { useEffect } from 'react';
 import { ClerkProvider, ClerkLoaded } from '@clerk/clerk-expo'
 import * as SecureStore from 'expo-secure-store'
 import { NavigationContainer } from '@react-navigation/native';
+import { useOpenModal } from '@/lib/zustand';
+import CustomModal from '@/components/CustomModal';
+import { Modal, View } from 'react-native';
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
@@ -53,18 +56,20 @@ export default function RootLayout() {
       'Missing Publishable Key. Please set EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY in your .env',
     )
   }
-  
+   
 
   return (
   
     <ClerkProvider tokenCache={tokenCache} publishableKey={publishableKey}>
       <ClerkLoaded>
+        
       <Stack>
         {/* <Stack.Screen name="index" options={{ headerShown: false }} /> */}
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
       </Stack>
+     
       </ClerkLoaded>
       </ClerkProvider>
 
