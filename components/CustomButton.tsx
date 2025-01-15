@@ -1,8 +1,8 @@
-import { View, Text, TouchableOpacity, Animated, Easing } from 'react-native';
+import { View, Text, TouchableOpacity, Animated, Easing, ActivityIndicator } from 'react-native';
 import React, { useEffect, useRef } from 'react';
 import AntDesign from '@expo/vector-icons/AntDesign';
 
-const CustomButton = ({ type, onPress, name, isLoading }: { type: string, onPress: any, name: string, isLoading?: boolean }) => {
+const CustomButton = ({ type, onPress, name, isLoading }: { type?: string, onPress: any, name: string, isLoading?: boolean }) => {
   const spinValue = useRef(new Animated.Value(0)).current;
 
   // Spin animation effect
@@ -37,7 +37,7 @@ const CustomButton = ({ type, onPress, name, isLoading }: { type: string, onPres
       >
         {isLoading ? (
          <View>
-          <Text className='text-white font-bold'>Loading...</Text>
+          <Text className='text-white font-bold'><ActivityIndicator color={'white'} /></Text>
          </View>
         ) : (
           <Text className='text-white font-bold'>

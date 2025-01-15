@@ -8,6 +8,7 @@ import { router } from 'expo-router'
 import { isClerkAPIResponseError, useSignUp } from '@clerk/clerk-expo'
 import { ClerkAPIError} from '@clerk/types'
 import axios from 'axios'
+import LoadingModal from '@/components/LoadingModal'
 const SignUp = () => {
   const { isLoaded, signUp, setActive } = useSignUp();
   // USESTATES
@@ -65,6 +66,7 @@ const SignUp = () => {
     // console.log('Pressed')
   }
   return (
+    <View>
     <ScrollView className='pt-12'>
     
     <View className='flex items-center p-3'>
@@ -143,6 +145,7 @@ const SignUp = () => {
        />
     </View>
    </ScrollView>
+   </View>
   )
 }
 

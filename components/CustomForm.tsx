@@ -23,7 +23,9 @@ const CustomForm = ({ title, placeholder, type, onChangeText }: FormProps) => {
                     <View className='flex gap-3 p-2'>
                         <Text className='text-lg font-semibold'>{title}</Text>
                         {type !== 'phone-pad' ? (
-                            <View className='bg-gray-200 p-5 rounded-lg'>
+                            <View 
+                            className='bg-gray-200 p-1.5 rounded-lg'
+                            >
                                 <TextInput 
                                     placeholder={placeholder}
                                     placeholderTextColor={'black'}
@@ -48,8 +50,8 @@ const CustomForm = ({ title, placeholder, type, onChangeText }: FormProps) => {
                                             setFormattedValue(text);
                                         }}
                                         withDarkTheme
-                                        containerStyle={{ backgroundColor: '#e5e7eb' }}
-                                        textContainerStyle={{ backgroundColor: '#e5e7eb', width: 10 }}
+                                        containerStyle={{ backgroundColor: '#e5e7eb',  }}
+                                        textContainerStyle={{ backgroundColor: '#e5e7eb', width: '100%' }}
                                     />
                                 </View>
                             </View>

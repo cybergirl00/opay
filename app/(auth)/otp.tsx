@@ -11,8 +11,11 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSignUp } from '@clerk/clerk-expo';
 import axios from 'axios';
+import otpimg from '@/assets/images/otp.png'
+import LoadingModal from '@/components/LoadingModal';
 
 const OtpScreen = () => {
+  const [isLoading , setisLoading ] = useState(false)
   const { email, firstName, lastName, phone, clerkId } = useLocalSearchParams();
   const { isLoaded, signUp, setActive,  } = useSignUp();
   const [otp, setOtp] = useState(['', '', '', '', '', '']); // State to store each digit of the OTP
@@ -28,8 +31,6 @@ const OtpScreen = () => {
     if (value && index < 5) {
       inputs.current[index + 1]?.focus();
     }
-
-    // Call handleDone once the last digit is entered
     if (newOtp.every((digit) => digit !== '')) {
       onPressVerify(newOtp.join(''));
     }
@@ -37,44 +38,47 @@ const OtpScreen = () => {
 
   // ADD USER TO DOCS AND CREATE A FLUTTERWAVE SUBACCOUNT
   const addUserAndCreateSubaccount = async () => {
+    setisLoading(true);
     try {
-      const subaccountResponse = await axios.post(
-       'https://b15b-197-211-61-31.ngrok-free.app/create-subaccount',
-        {
-          email,
-          account_name: `${firstName} ${lastName}`,
-          mobilenumber: phone,
-        }
-      )
-      console.log(subaccountResponse.data.data)
-      const userResponse = await axios.post(
-        'https://b15b-197-211-61-31.ngrok-free.app/users',
-        {
-          firstName,
-          lastName,
-          email,
-          phone,
-          accountNumber: subaccountResponse.data.data.nuban ?? '',
-          bankName: subaccountResponse.data.data.bank_name ?? '',
-          amount: 0,
-          accountRef: subaccountResponse.data.data.account_reference ?? '',
-          clerkId,
-        }
-      );
+        // Step 1: Create a customer on Paystack
+        const response = await axios.post(
+            'https://6f99-197-211-53-110.ngrok-free.app/create-subaccount',
+            {
+                email,
+               firstName,
+                lastName,
+              phone,
+            }
+        );
 
-      console.log('User added', userResponse.data);
-      router.replace('/');
+        console.log(response)
+        await axios.post('https://6f99-197-211-53-110.ngrok-free.app/users', {
+            email,
+            clerkId,
+            firstName,
+            lastName,
+            accountNumber: response.data.data.nuban,
+            accountRef: response.data.data.account_reference,
+            bankName: response.data.data.bank_name,
+            amount: 0,
+            phone: phone
+        });
+
+        router.push('/');
     } catch (error) {
-      console.error('Error adding user in client', error);
+        console.error('Error:', error);
+        alert('An error occurred during registration.');
+    } finally {
+        setisLoading(false); // Ensure loading stops even on error
     }
-  };
+};
 
-  // Handle when OTP is fully entered
+
   const onPressVerify = async (fullOtp: string) => {
     if (!isLoaded) {
       return;
     }
-
+    setisLoading(true)
     try {
       const completeSignUpResult = await signUp.attemptEmailAddressVerification({
         code: fullOtp,
@@ -88,12 +92,14 @@ const OtpScreen = () => {
       }
     } catch (err: any) {
       console.error(JSON.stringify(err, null, 2));
+      setisLoading(false)
     }
 
     console.log('OTP pressed:', fullOtp);
   };
 
   return (
+    <>
     <SafeAreaView className="flex-1 bg-white">
       {/* Header */}
       <View className="flex flex-row items-center p-3">
@@ -120,7 +126,7 @@ const OtpScreen = () => {
               </Text>{' '}
               please take a look
             </Text>
-            <Image source={otp} className="h-10 w-10" />
+            <Image source={otpimg} className="h-10 w-10" />
           </View>
         </View>
 
@@ -152,7 +158,17 @@ const OtpScreen = () => {
         </View>
       </View>
     </SafeAreaView>
+
+    {isLoading  && (
+      <LoadingModal />
+    )}
+    </>
   );
 };
 
 export default OtpScreen;
+
+
+// const uri = "mongodb+srv://dikkorabiat25:KRJPuYk2pwVID9vK@opay.7efac.mongodb.net/?retryWrites=true&w=majority&appName=opay";
+
+// sk_test_d8d935cadfad5db7dcc37e673c8c1e042bd7efa7
