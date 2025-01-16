@@ -14,7 +14,7 @@ const Actions = () => {
       <View className='p-3 w-auto border border-gray-50 bg-gray-50 '>
       <View className='flex flex-row items-center justify-center gap-[15%]'>
         {transfers.map((item) => ( 
-            <TouchableOpacity className='gap-2' key={item.id}>
+            <TouchableOpacity className='gap-2' key={item.id} onPress={() => router.push(item.to)}>
                 <View className='bg-green-100 w-15 h-15 p-3 justify-center items-center rounded-full'>
                     <FontAwesome name={item.icon} size={14} color={'#02bb86'} />
                 </View>

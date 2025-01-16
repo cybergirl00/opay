@@ -1,4 +1,4 @@
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { router } from 'expo-router';
@@ -40,6 +40,7 @@ const Transactions: React.FC = () => {
                     }
                 );
                 setTransactions(response.data.data.transactions);
+                console.log(response.data.data.transactions)
             } catch (error) {
                 console.error('Error fetching transaction data:', error);
             } finally {
@@ -77,7 +78,7 @@ const Transactions: React.FC = () => {
             </View>
 
             {/* Transactions Grouped by Month */}
-            <View className="p-5">
+            <ScrollView className="p-5">
                 {Object.entries(groupedTransactions).map(([month, transactions]) => {
                     const inflow = transactions
                         .filter((item) => item.type === 'C')
@@ -161,7 +162,7 @@ const Transactions: React.FC = () => {
                         </View>
                     );
                 })}
-            </View>
+            </ScrollView>
         </View>
     );
 };

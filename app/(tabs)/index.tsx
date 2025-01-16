@@ -29,21 +29,21 @@ const HomePage = () => {
           }}
         />
          <Tab.Screen
-          name="rewards"
+          name="Rewards"
           component={Rewards}
           options={{
             tabBarIcon: ({ color }) => <FontAwesome size={19} name="diamond" color={color} />,
           }}
         />
          <Tab.Screen
-          name="finance"
+          name="Finance"
           component={Finance}
           options={{
             tabBarIcon: ({ color }) => <FontAwesome size={19} name="money" color={color} />,
           }}
         />
          <Tab.Screen
-          name="cards"
+          name="Cards"
           component={Cards}
           options={{
             tabBarIcon: ({ color }) => <FontAwesome size={19} name="credit-card" color={color} />,

@@ -12,6 +12,9 @@ const Layout = () => {
         <Stack.Screen name="transactions" options={{ headerShown: false }} />
         <Stack.Screen name="transaction-details" options={{ headerShown: false }} />
         <Stack.Screen name="airtime" options={{ headerShown: false }} />
+        <Stack.Screen name="data" options={{ headerShown: false }} />
+        <Stack.Screen name="fund" options={{ headerShown: false }} />
+        <Stack.Screen name="bank-transfer" options={{ headerShown: false }} />
       </Stack>
   );
 }

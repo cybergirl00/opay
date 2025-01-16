@@ -2,7 +2,7 @@ import { Image, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity
 import React, { useEffect, useState } from 'react';
 import CustomHeader from '@/components/CustomHeader';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { airtimePlans, formattedCurrency, providers } from '@/lib/data';
+import { airtimePlans, dataPlans, formattedCurrency, providers } from '@/lib/data';
 import airtel from '@/assets/images/airtel.png';
 import glo from '@/assets/images/glo.png';
 import mtn from '@/assets/images/mtn.png';
@@ -14,7 +14,7 @@ import { useUserData } from '@/lib/zustand';
 import axios from 'axios';
 import { router } from 'expo-router';
 
-const Airtime = () => {
+const Data = () => {
     const [openModal, setOpenModal] = useState(false);
     const [selectedProvider, setSelectedProvider] = useState(glo); // Default provider
     const [isLoading, setIsLoading] = useState(false)
@@ -24,6 +24,7 @@ const Airtime = () => {
      const [Balance, setBalance] = useState(0);
      const [paymentMethod, setPaymentMethod] = useState('wallet')
      const [providerName, setProviderName] = useState('glo')
+     const [planCode, setPlanCode] = useState('')
     
     const userData = useUserData((state) => state.data);
     const [phoneNumber, setPhoneNumber] = useState(userData.phone);
@@ -73,12 +74,13 @@ const Airtime = () => {
         setOpenModal(false);
     };
 
-    const customModal = async  (price : number) => {
+    const customModal = async  (price : number, code: string) => {
         if(!phoneNumber) {
             alert('Please Enter a valid phone number')
         } else {
             setOpenCustomModal(true)
-            setPrice(price)
+            setPrice(price);
+            setPlanCode(code)
         }
     }
 
@@ -110,7 +112,7 @@ const Airtime = () => {
       }, [userData.accountRef]);
 
 
-      const buyAirtime = async  () => {
+      const buyData = async  (code: string) => {
         if(checkoutPrice < price ) {
             alert('Insufficient fund, please fund your wallet')
         } else {
@@ -131,7 +133,7 @@ const Airtime = () => {
 
                 if(sendMoney.data.staus === 'success') {
                        // BUY AIRTIME
-                const response = await axios.get(`https://vtu.ng/wp-json/api/v1/airtime?username=Cybergirl&password=Cybergirl@2005&phone=${phoneNumber}&network_id=${providerName}&amount=${price}`);
+                const response = await axios.get(`https://vtu.ng/wp-json/api/v1/data?username=Cybergirl&password=Cybergirl@2005&phone=${phoneNumber}&network_id=${providerName}&variation_id=${code}`);
               console.log(response.data);
               if(response.data.code === 'success') {
                 setIsLoading(false);
@@ -171,7 +173,7 @@ const Airtime = () => {
     return (
         <>
         <View>
-            <CustomHeader title='Airtime' left='History' leftLink='/' />
+            <CustomHeader title='Data' left='History' leftLink='/' />
 
             <ScrollView>
             <View>
@@ -230,40 +232,17 @@ const Airtime = () => {
             <View style={styles.topUpSection}>
         <Text style={styles.topUpText}>Top Up</Text>
         <View style={styles.plansContainer}>
-          {airtimePlans.map((plan) => (
-            <TouchableOpacity key={plan.id} style={styles.planButton} className='bg-gray-50 border border-green-100' onPress={() => customModal(plan.price)}>
-              <Text style={styles.planText}>{formattedCurrency(plan.price)}</Text>
-              <Text className='text-[8px]  pt-3 text-gray-500 font-semibold '>Pay {formattedCurrency(plan.price)}</Text>
-            </TouchableOpacity>
+          {dataPlans.map((plan) => (
+            <>
+            {providerName === plan.network && (
+                <TouchableOpacity key={plan.code} style={styles.planButton} className='bg-gray-50 border border-green-100 p-2' onPress={() => customModal(plan.price, plan.code)}>
+                <Text style={styles.planText}>{plan.data}</Text>
+                <Text className='text-[8px]  pt-3 text-gray-500 font-semibold '>{plan.duration}</Text>
+                <Text className='text-[8px]  pt-3 text-gray-500 font-semibold '>{formattedCurrency(plan.price)}</Text>
+              </TouchableOpacity>
+            )}
+            </>
           ))}
-        </View>
-
-        <View className='flex-row p-2 justify-between items-center'>
-            <View className='w-[200px]'>
-            <View className='flex-row p-1 items-center gap-2 top-2'>
-                <Text>N</Text>
-                <TextInput placeholder='50 - 99,999' keyboardType='number-pad' />
-                
-            </View>
-            <View className='border border-gray-300 border-b-0' />
-            </View>
-
-            <View className='top-3'>
-            <TouchableOpacity 
-    className='bg-green-400 w-[60px] h-[30px] rounded-full flex items-center justify-center shadow-md'
-    style={{
-        elevation: 1,  // For Android shadow
-        shadowColor: '#000',  // For iOS shadow
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.2,
-        shadowRadius: 3,
-    }}
->
-    <Text style={{ color: 'white', fontWeight: 'bold' }}>Pay</Text>
-</TouchableOpacity>
-            </View>
-          
-           
         </View>
       </View>
             </View>
@@ -287,7 +266,7 @@ const Airtime = () => {
                        <Text className='font-semibold text-[12px] text-gray-500 '>Product Name</Text>
                        <View className='flex-row items-center  gap-1'>
                         <Image  source={selectedProvider} className='w-5 h-5 ' />
-                       <Text className='font-semibold text-[12px] '>Airtime</Text>
+                       <Text className='font-semibold text-[12px] '>Data</Text>
                        </View>
                      </View>
 
@@ -304,7 +283,7 @@ const Airtime = () => {
 
                      <View className='flex flex-row justify-between items-center p-2'>
                        <Text className='font-semibold text-[12px] text-gray-500 '>Bonus to Earn</Text>
-                       <Text className='font-semibold text-[12px] text-green-500 '>+2 points</Text>
+                       <Text className='font-semibold text-[12px] text-green-500 '>+3 points</Text>
                      </View>
      
      
@@ -360,7 +339,7 @@ const Airtime = () => {
                        </View>
                      : 
                      <View>
-                       <CustomButton name='Pay' onPress={buyAirtime} />
+                       <CustomButton name='Pay' onPress={() => buyData(planCode)} />
                      </View>
                      }
      
@@ -376,7 +355,7 @@ const Airtime = () => {
     );
 };
 
-export default Airtime;
+export default Data;
 
 const styles = StyleSheet.create({
     modalOverlay: {

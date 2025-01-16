@@ -7,6 +7,7 @@ import WidthWrapper from '@/components/WidthWrapper';
 import Banner from '@/components/home/Banner';
 import Actions from '@/components/home/Actions';
 import { useUserData } from '@/lib/zustand';
+import axios from 'axios';
 
 const Home = () => {
   const { user } = useUser();
@@ -16,6 +17,7 @@ const Home = () => {
   const setData = useUserData((state) => state.setData)
   const storedata = useUserData((state) => state.data)
   // console.log('This is the data from strore' + storedata)
+  console.log(user?.id)
   useEffect(() => {
     const getUser = async () => {
       if (!user) return;
@@ -45,6 +47,8 @@ const Home = () => {
   }, [user]);
   
 
+ 
+
   if (loading || !storedata) {
     return <LoadingModal />;
   }
@@ -55,7 +59,7 @@ const Home = () => {
      <Header firstName={userData?.firstName} />
 
      <ScrollView showsVerticalScrollIndicator={false}>
-     <Banner accountref={userData.accountRef} />
+     <Banner accountref={userData?.accountRef} />
      <Actions />
      </ScrollView>
      </WidthWrapper>

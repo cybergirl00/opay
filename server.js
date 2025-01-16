@@ -38,7 +38,17 @@ const cardSchema = new mongoose.Schema({
     cardRef:  { type: String, required: true },
 });
 
-const Card = mongoose.model("Card", cardSchema)
+const Card = mongoose.model("Card", cardSchema);
+
+const transactionsSchema = new mongoose.Schema({
+    ref: { type: String, required: true },
+    userId: { type: String, required: true },
+    type: { type: String, required: true },
+    points: { type: Number, required: true },
+});
+
+const Transaction = mongoose.model("Transactions", transactionsSchema);
+
 
 // Create a Flutterwave Subaccount
 app.post('/create-subaccount', async (req, res) => {
@@ -118,6 +128,47 @@ app.get('/get-user', async (req, res) => {
     }
 });
 
+
+app.post('/transaction', async (req, res) => {
+    const { ref, userId, type, points } = req.body;
+
+    try {
+        const newTransaction = new Transaction({ ref, userId, type, points });
+        await newTransaction.save();
+        res.status(201).json({ message: 'Transaction created successfully' });
+    } catch (error) {
+        console.error('Error saving user:', error);
+        res.status(500).json({ error: 'Failed to add transaction to database' });
+    }
+})
+
+app.post('/transfer', async (req, res) => {
+  const   {account_number, account_bank, narration, amount, debit_subaccount } = req.body;
+    const sendMoney = await axios.post(`https://api.flutterwave.com/v3/transfers`, {
+        account_number,
+        account_bank,
+        amount,
+        debit_subaccount,
+        narration,
+        currency: 'NGN'
+    },
+    {
+        headers: {
+            Authorization: `Bearer FLWSECK-b775d93a3b14a0be4427b31a3f03cd4a-19461e011d9vt-X`
+        }
+    }
+)
+
+console.log(sendMoney)
+
+if (sendMoney.data.status === 'success') {
+    console.log('✅ Transfer Successful:', sendMoney.data);
+} else {
+    console.warn('⚠️ Transfer Failed:', sendMoney.data);
+}
+    console.log(sendMoney.data)
+
+})
 
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);

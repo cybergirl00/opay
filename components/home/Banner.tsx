@@ -93,7 +93,7 @@ const Banner = ({ accountref }: { accountref: string}) => {
             </View>
 
           <View className=''>
-            <TouchableOpacity className='bg-white flex-row w-[100%] p-1.5 rounded-full'>
+            <TouchableOpacity className='bg-white flex-row w-[100%] p-1.5 rounded-full' onPress={() => router.push('/fund')} >
                 <View className='flex-row items-center gap-1.5 justify-center'>   
                  <FontAwesome name='plus' color={'#02bb86'} />
                 <Text className='text-[10px]  text-[#02BB86] font-bold '>Add Money</Text></View>
@@ -115,10 +115,10 @@ const Banner = ({ accountref }: { accountref: string}) => {
               router.push({
               pathname: '/(tabs)/transaction-details',
               params: {
-               remarks: item.remarks,
+               remarks: item?.remarks,
              amount: item.amount,
-             transactionNo: item.refrence,
-              date: item.date,
+             transactionNo: item?.refrence,
+              date: item?.date,
               },
               })
               }
