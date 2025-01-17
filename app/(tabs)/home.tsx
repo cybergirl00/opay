@@ -18,23 +18,27 @@ const Home = () => {
   const storedata = useUserData((state) => state.data)
   // console.log('This is the data from strore' + storedata)
   console.log(user?.id)
+  console.log(storedata)
   useEffect(() => {
     const getUser = async () => {
       if (!user) return;
   
       try {
-        const response = await fetch(`https://8728-197-211-63-167.ngrok-free.app/get-user?clerkId=${user.id}`, { // Send clerkId as query parameter
+
+        const response = await fetch(`https://4193-197-211-63-167.ngrok-free.app/get-user?clerkId=${user.id}`, { // Send clerkId as query parameter
           method: 'GET', 
         });
 
         console.log(response);
+        console.log(response)
   
         if (response.ok) {
           const data = await response.json();
           setUserData(data); 
+          console.log(data)
           setData(data)
         } else {
-          console.error('Failed to fetch user data');
+          console.error('Failed to fetch user data', response);
         }
       } catch (error) {
         console.log(error);

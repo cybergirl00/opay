@@ -5,9 +5,14 @@ import WidthWrapper from '@/components/WidthWrapper'
 import FontAwesome from '@expo/vector-icons/FontAwesome'
 import axios from 'axios'
 import CustomButton from '@/components/CustomButton'
+import { router } from 'expo-router'
 
 const BankTransfer = () => {
     const [openBankModal, setOpenBankModal] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [detailsModal, setDetailsModal] = useState(false);
+    const [customerDetails, setCustomerDetails] = useState({})
+    const [searchQuery, setSearchQuery] = useState('');
     const [selectedBank, setSelectedBank] = useState({
         name: null,
         code: null
@@ -15,6 +20,10 @@ const BankTransfer = () => {
     const [accountNumber, setAccountNumber] = useState(null);
     const [banks, setBanks] = useState([])
 
+    const filteredBanks = banks.filter(bank =>
+        bank?.name.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    
 
     useEffect(() => {
      const getBanks = async () => {
@@ -26,7 +35,6 @@ const BankTransfer = () => {
                 }
             })
             setBanks(response.data.data)
-            console.log(response.data.data)   
         } catch (error) {
             console.log(error)
         }
@@ -38,6 +46,37 @@ const BankTransfer = () => {
     const selectbank = (name: string, code: string) => {
         setSelectedBank({name , code});
         setOpenBankModal(false)
+    }
+
+    const getdetails = async () => {
+        if(accountNumber ?? selectedBank.code) {
+            try {
+                setIsLoading(true);
+                const response = await axios.post(`https://api.flutterwave.com/v3/accounts/resolve`, {
+                    account_number: accountNumber,
+                    account_bank: selectedBank.code
+                },
+                 {
+                    headers: {
+                        Authorization: `Bearer FLWSECK-b775d93a3b14a0be4427b31a3f03cd4a-19461e011d9vt-X`,
+                         'Content-Type': 'application/json'
+                    }
+                })
+
+                if(response.data.status === 'success') {
+                    setIsLoading(false);
+                    setCustomerDetails(response.data.data)
+                    console.log(response.data.data);
+                    setDetailsModal(true)
+                }
+            } catch (error) {
+                setIsLoading(false)
+                console.log(error)
+                alert('Account cannot be found please confirm the details.')
+            } finally {
+                setIsLoading(false)
+            }
+        }
     }
     
   return (
@@ -52,7 +91,7 @@ const BankTransfer = () => {
                     <Text className='p-2 text-[12px] font-semibold '>Recipient Account</Text>
 
                     <View className='p-2 gap-4 '>
-                        <TextInput placeholder='Enter 10 digits Account Number' onChangeText={(text) => setAccountNumber(text)} keyboardType='number-pad' className='border-b  border-gray-200 text-[12px] ' />
+                        <TextInput placeholder='Enter 10 digits Account Number' onChangeText={(text: string) => setAccountNumber(text)} keyboardType='number-pad' className='border-b  border-gray-200 text-[12px] ' />
                        <View>
                         <TouchableOpacity onPress={() => setOpenBankModal(true)} className=''>
                             {selectedBank.name  !== null ? 
@@ -74,7 +113,7 @@ const BankTransfer = () => {
                     </View>
 
                     {accountNumber && selectedBank.code !== null && (
-                        <CustomButton name='Send Money ' onPress={() => {}} />
+                        <CustomButton name='Send Money ' onPress={getdetails} isLoading={isLoading} />
                     )}
                 </View>
             </View>
@@ -89,8 +128,15 @@ const BankTransfer = () => {
                     <Text className='left-[35%] font-semibold'>Select Bank</Text>
                 </View>
 
+                <View className='justify-center p-4'>
+                <View className='flex-row   items-center pl-4 border border-gray-200 rounded-lg'>
+                    {/* <FontAwesome name='search' size={13} /> */}
+                    <TextInput placeholder='Search here' placeholderTextColor={'gray'} className='' onChangeText={(text) => setSearchQuery(text)}
+                    value={searchQuery} />
+                </View>
+                </View>
                 <ScrollView className='pt-5  pr-2 gap-3'>
-                {banks.map((bank) => (
+                {filteredBanks.map((bank) => (
                     <TouchableOpacity className='flex-row p-1 gap-2' onPress={() => selectbank(bank.name, bank.code)} >
                         <View className='bg-green-500 rounded-full  p-1'>
                         <FontAwesome name='bank' size={17} color={'white'} />
@@ -99,6 +145,30 @@ const BankTransfer = () => {
                         </TouchableOpacity>
                 ))}
                 </ScrollView>
+            </View>
+        </Modal>
+
+        <Modal visible={detailsModal} transparent={true}>
+            <View className='flex-1 justify-center items-center bottom-[50px]  p-4 bg-[rgb(0,0,0)] '>
+                <View className='bg-white h-fit w-[100%] rounded-lg shadow-2xl  shadow-green-500 '>
+                    <TouchableOpacity className='pl-4 pt-4' onPress={() => setDetailsModal(false)} >
+                        <FontAwesome name='close' size={20} />
+                    </TouchableOpacity>
+                    <Text className='text-center text-gray-900 font-semibold text-md pt-3'>{selectedBank.name}</Text>
+                    <Text className='text-center font-extrabold text-2xl pt-3'>{customerDetails?.account_name}</Text>
+                    <Text className='text-center font-extrabold text-lg pt-3'>{customerDetails?.account_number}</Text>
+
+                    <CustomButton name='Continue' onPress={() => router.push({
+                        pathname: '/(tabs)/transfer',
+                        params: {
+                            account_number: customerDetails.account_number,
+                            account_name: customerDetails.account_name,
+                            title: 'Transfer to Bank Account',
+                            bankName: selectedBank.name,
+                            bankCode: selectedBank.code
+                        }
+                    })} />
+                </View>
             </View>
         </Modal>
     </View>

@@ -14,20 +14,22 @@ const Banner = ({ accountref }: { accountref: string}) => {
 
   useEffect(() => {
     const getBalance = async () => {
-      try {
-        const response = await axios.get(
-          `https://api.flutterwave.com/v3/payout-subaccounts/${accountref}/balances?currency=NGN`,
-          {
-            headers: {
-              Authorization: `Bearer FLWSECK-b775d93a3b14a0be4427b31a3f03cd4a-19461e011d9vt-X` // Replace with your actual secret key
+      if(userData.accountRef !== null) {
+        try {
+          const response = await axios.get(
+            `https://api.flutterwave.com/v3/payout-subaccounts/${accountref}/balances?currency=NGN`,
+            {
+              headers: {
+                Authorization: `Bearer FLWSECK-b775d93a3b14a0be4427b31a3f03cd4a-19461e011d9vt-X` 
+              }
             }
-          }
-        );
-        const fetchedBalance = response.data.data.available_balance; 
-        setBalance(fetchedBalance);
-        // console.log(fetchedBalance)
-      } catch (error) {
-        console.error('Error fetching balance:', error);
+          );
+          const fetchedBalance = response.data.data.available_balance; 
+          setBalance(fetchedBalance);
+          // console.log(fetchedBalance)
+        } catch (error) {
+          console.error('Error fetching balance:', error);
+        }
       }
     };
 
@@ -37,20 +39,22 @@ const Banner = ({ accountref }: { accountref: string}) => {
 
   useEffect(() => {
     const getTransaction = async () => {
-      try {
-        const response = await axios.get(
-          `https://api.flutterwave.com/v3/payout-subaccounts/${userData.accountRef}/transactions?fetch_limit=1`, 
-          {
-            headers: {
-              "Authorization": "Bearer FLWSECK-b775d93a3b14a0be4427b31a3f03cd4a-19461e011d9vt-X",  // Replace with your correct API key
-              "Content-Type": "application/json",
-            }
-          }  
-        );
-        setTransactions(response.data.data.transactions); 
-     
-      } catch (error) {
-        console.error('Error fetching transaction data:', error);
+      if(userData.accountRef !== null) {
+        try {
+          const response = await axios.get(
+            `https://api.flutterwave.com/v3/payout-subaccounts/${userData.accountRef}/transactions?fetch_limit=1`, 
+            {
+              headers: {
+                "Authorization": "Bearer FLWSECK-b775d93a3b14a0be4427b31a3f03cd4a-19461e011d9vt-X",  // Replace with your correct API key
+                "Content-Type": "application/json",
+              }
+            }  
+          );
+          setTransactions(response.data.data.transactions); 
+       
+        } catch (error) {
+          console.error('Error fetching transaction data:', error);
+        }
       }
     };
   

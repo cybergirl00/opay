@@ -78,7 +78,7 @@ const Transactions: React.FC = () => {
             </View>
 
             {/* Transactions Grouped by Month */}
-            <ScrollView className="p-5">
+            <ScrollView className="p-5" contentContainerStyle={{paddingBottom: 90}}>
                 {Object.entries(groupedTransactions).map(([month, transactions]) => {
                     const inflow = transactions
                         .filter((item) => item.type === 'C')

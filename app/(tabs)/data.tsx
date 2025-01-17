@@ -122,27 +122,25 @@ const Data = () => {
 
                 // MAKE TRANSFER TO THE OWNER ACCOUNT
 
-                const sendMoney = await axios.post('https://8728-197-211-63-167.ngrok-free.app/transfer', {
+                const sendMoney = await axios.post('https://4193-197-211-63-167.ngrok-free.app/transfer', {
                             account_number: '1542363659',
                             account_bank: '044',
                             amount: price,
                             debit_subaccount: userData.accountRef,
-                            narration: `Airtime Purchased by ${userData.firstName} ${userData.lastName}`,
+                            narration: `Mobile data Purchased by ${userData.firstName} ${userData.lastName}`,
                             currency: 'NGN'
                 });
-
-                if(sendMoney.data.staus === 'success') {
+                if(sendMoney.data.status === 'success') {
                        // BUY AIRTIME
                 const response = await axios.get(`https://vtu.ng/wp-json/api/v1/data?username=Cybergirl&password=Cybergirl@2005&phone=${phoneNumber}&network_id=${providerName}&variation_id=${code}`);
               console.log(response.data);
               if(response.data.code === 'success') {
                 setIsLoading(false);
-
                 await axios.post('/transaction', {
                     ref: sendMoney.data.data.id,
                     userId: userData.clerkId,
-                    type: 'airtime',
-                    points: 2
+                    type: 'data',
+                    points: 3
                    }).then(() => {
                     setIsLoading(false)
                     // PUSH TO RECIPT SCREEN 
@@ -158,14 +156,16 @@ const Data = () => {
 
 
               }
+                } else {
+                  setIsLoading(false)
+                  alert('Transaction failed')
                 }
-
-
-                setIsLoading(false)
                 
             } catch (error) {
                 console.log(error);
                 setIsLoading(false)
+            } finally {
+              setIsLoading(false)
             }
         }
       }

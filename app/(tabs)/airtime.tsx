@@ -120,7 +120,7 @@ const Airtime = () => {
 
                 // MAKE TRANSFER TO THE OWNER ACCOUNT
 
-                const sendMoney = await axios.post('https://8728-197-211-63-167.ngrok-free.app/transfer', {
+                const sendMoney = await axios.post('https://4193-197-211-63-167.ngrok-free.app/transfer', {
                             account_number: '1542363659',
                             account_bank: '044',
                             amount: price,
@@ -136,7 +136,7 @@ const Airtime = () => {
               if(response.data.code === 'success') {
                 setIsLoading(false);
 
-                await axios.post('/transaction', {
+                await axios.post('https://4193-197-211-63-167.ngrok-free.app/transaction', {
                     ref: sendMoney.data.data.id,
                     userId: userData.clerkId,
                     type: 'airtime',

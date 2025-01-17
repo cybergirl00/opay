@@ -15,6 +15,7 @@ const Layout = () => {
         <Stack.Screen name="data" options={{ headerShown: false }} />
         <Stack.Screen name="fund" options={{ headerShown: false }} />
         <Stack.Screen name="bank-transfer" options={{ headerShown: false }} />
+        <Stack.Screen name="transfer" options={{ headerShown: false }} />
       </Stack>
   );
 }
