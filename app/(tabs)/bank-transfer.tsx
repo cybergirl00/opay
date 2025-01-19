@@ -6,19 +6,20 @@ import FontAwesome from '@expo/vector-icons/FontAwesome'
 import axios from 'axios'
 import CustomButton from '@/components/CustomButton'
 import { router } from 'expo-router'
+import { flutterwaveKey } from '@/lib/keys'
 
 const BankTransfer = () => {
     const [openBankModal, setOpenBankModal] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [detailsModal, setDetailsModal] = useState(false);
-    const [customerDetails, setCustomerDetails] = useState({})
+    const [customerDetails, setCustomerDetails] = useState<{ account_name?: string; account_number?: string }>({});
     const [searchQuery, setSearchQuery] = useState('');
-    const [selectedBank, setSelectedBank] = useState({
+    const [selectedBank, setSelectedBank] = useState<{ name: string | null; code: string | null }>({
         name: null,
-        code: null
-    });
-    const [accountNumber, setAccountNumber] = useState(null);
-    const [banks, setBanks] = useState([])
+        code: null,
+      });
+      const [accountNumber, setAccountNumber] = useState<string | null>(null);
+      const [banks, setBanks] = useState<{ name: string; code: string }[]>([]);
 
     const filteredBanks = banks.filter(bank =>
         bank?.name.toLowerCase().includes(searchQuery.toLowerCase())
@@ -30,7 +31,7 @@ const BankTransfer = () => {
         try {
             const response = await axios.get('https://api.flutterwave.com/v3/banks/NG', {
                 headers: {
-                    Authorization: `Bearer FLWSECK-b775d93a3b14a0be4427b31a3f03cd4a-19461e011d9vt-X`,
+                    Authorization: `Bearer ${flutterwaveKey}`,
                     "Content-Type": 'application/json'
                 }
             })
@@ -58,7 +59,7 @@ const BankTransfer = () => {
                 },
                  {
                     headers: {
-                        Authorization: `Bearer FLWSECK-b775d93a3b14a0be4427b31a3f03cd4a-19461e011d9vt-X`,
+                        Authorization: `Bearer ${flutterwaveKey}`,
                          'Content-Type': 'application/json'
                     }
                 })

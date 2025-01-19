@@ -5,11 +5,23 @@ import axios from 'axios';
 import { formatDate, formattedCurrency } from '@/lib/data';
 import { useUserData } from '@/lib/zustand';
 import { router } from 'expo-router';
+import { flutterwaveKey } from '@/lib/keys';
+
+
+interface Transaction {
+  type: 'C' | 'D'; // C for credit, D for debit
+  remarks: string | null;
+  amount: number;
+  reference: string;
+  date: string; // Assuming date is a string in ISO format
+}
+
+
 
 const Banner = ({ accountref }: { accountref: string }) => {
   const [hidebalance, setHidebalance] = useState(true);
   const [Balance, setBalance] = useState(0);
-  const [transactions, setTransactions] = useState([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [refreshing, setRefreshing] = useState(false); // Added for pull-to-refresh
   const userData = useUserData((state) => state.data);
 
@@ -20,7 +32,7 @@ const Banner = ({ accountref }: { accountref: string }) => {
           `https://api.flutterwave.com/v3/payout-subaccounts/${accountref}/balances?currency=NGN`,
           {
             headers: {
-              Authorization: `Bearer FLWSECK-b775d93a3b14a0be4427b31a3f03cd4a-19461e011d9vt-X`,
+              Authorization: `Bearer ${flutterwaveKey}`,
             },
           }
         );
@@ -39,7 +51,7 @@ const Banner = ({ accountref }: { accountref: string }) => {
           `https://api.flutterwave.com/v3/payout-subaccounts/${userData.accountRef}/transactions?fetch_limit=1`,
           {
             headers: {
-              Authorization: `Bearer FLWSECK-b775d93a3b14a0be4427b31a3f03cd4a-19461e011d9vt-X`,
+              Authorization: `Bearer ${flutterwaveKey}`,
               'Content-Type': 'application/json',
             },
           }
