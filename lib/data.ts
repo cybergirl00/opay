@@ -2,24 +2,6 @@ import airtel from '@/assets/images/airtel.png'
 import glo from '@/assets/images/glo.png'
 import mtn from '@/assets/images/mtn.png'
 import mobile from '@/assets/images/9mobile.png'
-export const transfers = [
-    {
-        id: 1,
-        title: 'To Opay',
-        icon: 'envelope-o'
-    },
-    {
-        id: 2,
-        title: 'To Bank',
-        icon: 'bank',
-        to: '/bank-transfer'
-    },
-    {
-        id: 3,
-        title: 'Withdraw',
-        icon: 'google-wallet'
-    },
-]
 
 
 export const vtu = [
@@ -36,58 +18,39 @@ export const vtu = [
         to: '/data'
     },
     {
-        id: 3,
-        title: 'Betting',
-        icon: 'soccer-ball-o'
+        id: 1,
+        title: 'To Opay',
+        icon: 'envelope-o',
+        to: '/bank-transfer'
     },
     {
-        id: 4,
-        title: 'Tv',
-        icon: 'tv'
-    },
-    {
-        id: 5,
-        title: 'Safebox',
-        icon: 'inbox'
-    },
-    {
-        id: 6,
-        title: 'Loan',
-        icon: 'handshake-o'
+        id: 2,
+        title: 'To Bank',
+        icon: 'bank',
+        to: '/bank-transfer'
     },
 ]
 
-
-export const formattedCurrency = (amount: number): string => {
-    return `₦${new Intl.NumberFormat('en-NG', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-    }).format(amount)}`;
+export const prefixToProvider = {
+    '070': glo,   // Glo
+    '080': glo,   // Glo
+    '081': mtn,   // MTN
+    '082': mtn,   // MTN
+    '083': mtn,   // MTN
+    '084': mtn,   // MTN
+    '085': mtn,   // MTN
+    '086': mtn,   // MTN
+    '087': mtn,   // MTN
+    '088': mtn,   // MTN
+    '090': airtel,   // Airtel
+    '091': mobile,   // 9Mobile
+    '092': mobile,   // 9Mobile
+    '093': mobile,   // 9Mobile
+    '094': mobile,   // 9Mobile
+    '095': mobile,   // 9Mobile
+    '096': mobile,   // 9Mobile
 };
 
-
-
-export const formatDate = (dateString: any) => {
-    const date = new Date(dateString);
-    
-    // Extract the components of the date
-    const month = date.toLocaleString('default', { month: 'short' }); // 'Jan', 'Feb', etc.
-    const day = date.getDate();
-    const year = date.getFullYear();
-    
-    // Add suffix for the day (e.g., 'st', 'nd', 'rd', 'th')
-    const daySuffix = (day: any) => {
-      if (day > 3 && day < 21) return 'th'; // Special case for 11th to 13th
-      switch (day % 10) {
-        case 1: return 'st';
-        case 2: return 'nd';
-        case 3: return 'rd';
-        default: return 'th';
-      }
-    };
-    
-    return `${month} ${day}${daySuffix(day)}, ${year}`;
-  };
 
 
   export const providers = [
@@ -139,8 +102,7 @@ export const formatDate = (dateString: any) => {
         price: 2000
     },
   ]
-
- export  const dataPlans = [
+  export  const dataPlans = [
     { code: "500", network: "mtn", data: "500MB", duration: "30 Days", price: 200, discountPrice: 189 },
     { code: "M1024", network: "mtn", data: "1GB", duration: "30 Days", price: 350, discountPrice: 299 },
     { code: "M2024", network: "mtn", data: "2GB", duration: "30 Days", price: 680, discountPrice: 599 },
@@ -187,4 +149,33 @@ export const formatDate = (dateString: any) => {
     { code: "9MOB8000", network: "9Mobile", data: "11.5GB", duration: "30 Days", price: 8000, discountPrice: 7899 },
     { code: "9MOB5000", network: "9Mobile", data: "15GB", duration: "30 Days", price: 10000, discountPrice: 9859 },
   ];
+
+  export const formatDate = (dateString: any) => {
+    const date = new Date(dateString);
+    
+    // Extract the components of the date
+    const month = date.toLocaleString('default', { month: 'short' }); // 'Jan', 'Feb', etc.
+    const day = date.getDate();
+    const year = date.getFullYear();
+    
+    // Add suffix for the day (e.g., 'st', 'nd', 'rd', 'th')
+    const daySuffix = (day: any) => {
+      if (day > 3 && day < 21) return 'th'; // Special case for 11th to 13th
+      switch (day % 10) {
+        case 1: return 'st';
+        case 2: return 'nd';
+        case 3: return 'rd';
+        default: return 'th';
+      }
+    };
+    
+    return `${month} ${day}${daySuffix(day)}, ${year}`;
+  };
+
   
+  export const formattedCurrency = (amount: number): string => {
+    return `₦${new Intl.NumberFormat('en-NG', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(amount)}`;
+};

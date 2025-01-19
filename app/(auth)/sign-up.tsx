@@ -1,4 +1,4 @@
-import { View, Text, SafeAreaView, ScrollView } from 'react-native'
+import { View, Text,  ScrollView } from 'react-native'
 import React, { useState } from 'react'
 import { Image } from 'react-native'
 import logo from '@/assets/images/icon.png'
@@ -7,8 +7,6 @@ import CustomButton from '@/components/CustomButton'
 import { router } from 'expo-router'
 import { isClerkAPIResponseError, useSignUp } from '@clerk/clerk-expo'
 import { ClerkAPIError} from '@clerk/types'
-import axios from 'axios'
-import LoadingModal from '@/components/LoadingModal'
 const SignUp = () => {
   const { isLoaded, signUp, setActive } = useSignUp();
   // USESTATES

@@ -8,6 +8,7 @@ import CustomButton from '@/components/CustomButton';
 import CustomModal from '@/components/CustomModal';
 import { useUserData } from '@/lib/zustand';
 import axios from 'axios';
+import { flutterwaveKey } from '@/lib/keys';
 
 const Transfer = () => {
     const {  account_name, account_number, title, bankName, bankCode } = useLocalSearchParams();
@@ -32,7 +33,7 @@ const Transfer = () => {
               `https://api.flutterwave.com/v3/payout-subaccounts/${userData.accountRef}/balances?currency=NGN`,
               {
                 headers: {
-                  Authorization: `Bearer FLWSECK-b775d93a3b14a0be4427b31a3f03cd4a-19461e011d9vt-X` // Replace with your actual secret key
+                  Authorization: `Bearer ${flutterwaveKey}` // Replace with your actual secret key
                 }
               }
             );
@@ -54,46 +55,52 @@ const Transfer = () => {
            setModal(!modal)
         }
     }
-
     const sendMoney = async () => {
         setIsLoading(true);
         try {
-            const sendMoney = await axios.post(' https://4193-197-211-63-167.ngrok-free.app/transfer', {
+            const sendMoneyResponse = await axios.post('https://c87a-197-211-63-167.ngrok-free.app/transfer', {
                 account_number: account_number,
                 account_bank: bankCode,
                 amount: amount,
                 debit_subaccount: userData.accountRef,
                 narration: remarks,
                 currency: 'NGN'
-    });
-    if(sendMoney.data.status === 'success') {
-        await axios.post('https://4193-197-211-63-167.ngrok-free.app/transaction', {
-            ref: sendMoney.data.data.id,
-            userId: userData.clerkId,
-            type: 'transfer',
-            points: 2
-           }).then(() => {
-            setIsLoading(false)
-            alert('Transfer succesful')
-            router.push({pathname: '/(tabs)/transaction-details', params: {
-                remarks: remarks,
-                amount: amount,
-                date: new Date().toISOString(),
-            }})
-           })
-    } else {
-        alert('Transfer failed please try again after some thime ')
-    }
-    console.log(sendMoney.data.data)
+            });
+            console.log(sendMoneyResponse.data)
+            console.log(sendMoneyResponse)
+            console.log(sendMoneyResponse.data.data)
+            if (sendMoneyResponse.data.status === 'success') {
+                await axios.post('https://c87a-197-211-63-167.ngrok-free.app/transaction', {
+                    ref: sendMoneyResponse.data.data.reference || 'default-ref',
+                    userId: userData.clerkId,
+                    type: 'transfer',
+                    points: 2,
+                    fee: sendMoneyResponse.data.data.fee,
+                    available: true
+                });
+    
+                alert('Transfer successful!');
+                router.push({
+                    pathname: '/(tabs)/transaction-details',
+                    params: {
+                        remarks: sendMoneyResponse.data.data.remarks,
+                        amount: sendMoneyResponse.data.data.amount,
+                        date: sendMoneyResponse.data.data.created_at,
+                    }
+                });
+            } else {
+                alert(sendMoneyResponse.data.message);
+            }
         } catch (error) {
-            console.log(error)
-            setIsLoading(false);
-            setModal(false)
+            console.error('Error sending money:', error);
+            alert('An error occurred. Please try again later.');
         } finally {
-            setModal(false)
-            setIsLoading(false)
+            setIsLoading(false);
+            setModal(false);
         }
-    }
+    };
+    
+    
   return (
     <View>
       <CustomHeader title={title || ''} />

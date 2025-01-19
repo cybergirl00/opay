@@ -10,8 +10,9 @@ app.use(bodyParser.json());
 app.use(cors());
 const port = 3000;
 
-// MongoDB connection
-const uri = 'mongodb+srv://dikkorabiat25:KRJPuYk2pwVID9vK@opay.7efac.mongodb.net/?retryWrites=true&w=majority&appName=opay';
+const uri = process.env.MONGODB_URL
+const flutterwavekey = process.env.FLUTTERWAVE_SECRET_KEY
+
 mongoose.connect(uri, {
     useNewUrlParser: true,
     useUnifiedTopology: true
@@ -35,7 +36,8 @@ const User = mongoose.model('User', userSchema);
 
 const cardSchema = new mongoose.Schema({
     userId:  { type: String, required: true },
-    cardRef:  { type: String, required: true },
+    cardId:  { type: String, required: true },
+    holderId:   { type: String, required: true },
 });
 
 const Card = mongoose.model("Card", cardSchema);
@@ -45,6 +47,8 @@ const transactionsSchema = new mongoose.Schema({
     userId: { type: String, required: true },
     type: { type: String, required: true },
     points: { type: Number, required: true },
+    fee: { type: Number, required: true },
+    available: {type: Boolean, required: true}
 });
 
 const Transaction = mongoose.model("Transactions", transactionsSchema);
@@ -65,7 +69,7 @@ app.post('/create-subaccount', async (req, res) => {
             },
             {
                 headers: {
-                    Authorization: `Bearer FLWSECK-b775d93a3b14a0be4427b31a3f03cd4a-19461e011d9vt-X`
+                    Authorization: `Bearer ${flutterwavekey}`
                 }
             }
         );
@@ -97,11 +101,66 @@ app.post('/users', async (req, res) => {
 });
 
 app.post('/create-card', async (req, res) => {
-    const { userId, cardRef } = req.body;
+    const { userId, first_name, last_name, email, phone, address, state, postal_code, bvn, id_image, id_number  } = req.body;
     try {
-        const newCard = new Card({ userId, cardRef });
-        await newCard.save();
-        res.status(201).json({ message: 'Card created successfully' });
+        // Create a card holder
+        const createHolder = await axios.post('https://api.ufitpay.com/v1/create_card_holder', {
+            first_name: first_name,
+            last_name: last_name,
+            email: email,
+            phone: phone,
+            address: address,
+            state: state,
+            country: "Nigeria",
+            postal_code: postal_code,
+            kyc_method: 'NIGERIAN_NIN',
+            bvn: bvn,
+            id_image: id_image,
+            id_number: id_number
+        }, {
+            headers: {
+                'Api-Key': 'pub-5177477ca1639a7d0fd3814aa6459e6d', // Replace with your actual API key
+                'Api-Token': 'sec-4302a4fb2c252d12d53289c2a2d4a1b5', // Replace with your actual API token
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        })
+        console.log(createHolder)
+        if (createHolder.data.status !== 'success') {
+            console.log('Something went wrong while creating holder', createHolder);
+            return res.status(400).json({ error: 'Failed to create card holder', createHolder });
+        }
+        console.log(createHolder);
+
+        if(createHolder.data.status === 'success') {
+            try {
+           const createCard =  await axios.post('https://api.ufitpay.com/v1/create_virtual_card', 
+                {
+                    card_brand: 'mastercard',
+                    card_currency: 'NGN',
+                    card_holder_id: createHolder.data.data.card_holder_id
+                }, 
+                {
+                        headers: {
+                            'Api-Key': 'pub-5177477ca1639a7d0fd3814aa6459e6d', // Replace with your actual API key
+                'Api-Token': 'sec-4302a4fb2c252d12d53289c2a2d4a1b5', // Replace with your actual API token
+                'Content-Type': 'application/x-www-form-urlencoded',
+                        }
+                }
+            )
+            if(createCard.data.status === 'success') {
+                console.log(createCard.data);
+                const newCard = new Card({ userId, cardId: createCard.data.data.id, holderId: createHolder.data.data.card_holder_id  });
+                await newCard.save();
+                res.status(201).json({ message: 'Card created successfully' });
+            } else { 
+                console.log('Something went wrong while creating card')
+            }
+            } catch (error) {
+                console.log(error)
+            }
+        } else {
+            console.log('Something went wrong while creating holder')
+        }
     } catch (error) {
         console.error('Error creating card:', error);
         res.status(500).json({ error: 'Failed to create card' });
@@ -130,10 +189,10 @@ app.get('/get-user', async (req, res) => {
 
 
 app.post('/transaction', async (req, res) => {
-    const { ref, userId, type, points } = req.body;
+    const { ref, userId, type, points, fee, available } = req.body;
 
     try {
-        const newTransaction = new Transaction({ ref, userId, type, points });
+        const newTransaction = new Transaction({ ref, userId, type, points, fee, available });
         await newTransaction.save();
         res.status(201).json({ message: 'Transaction created successfully' });
     } catch (error) {
@@ -143,32 +202,49 @@ app.post('/transaction', async (req, res) => {
 })
 
 app.post('/transfer', async (req, res) => {
-  const   {account_number, account_bank, narration, amount, debit_subaccount } = req.body;
-    const sendMoney = await axios.post(`https://api.flutterwave.com/v3/transfers`, {
-        account_number,
-        account_bank,
-        amount,
-        debit_subaccount,
-        narration,
-        currency: 'NGN'
-    },
-    {
-        headers: {
-            Authorization: `Bearer FLWSECK-b775d93a3b14a0be4427b31a3f03cd4a-19461e011d9vt-X`
+    const { account_number, account_bank, narration, amount, debit_subaccount } = req.body;
+    
+    try {
+      const sendMoney = await axios.post(
+        `https://api.flutterwave.com/v3/transfers`,
+        {
+          account_number,
+          account_bank,
+          amount,
+          debit_subaccount,
+          narration,
+          currency: 'NGN'
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${flutterwavekey}`
+          }
         }
+      );
+
+      console.log('Transfer Response:', sendMoney.data);
+      
+      if (sendMoney.data.status === 'success') {
+        console.log('✅ Transfer Successful');
+        // Send response directly without assigning it to a variable
+        return res.json(sendMoney.data); 
+      } else {
+        console.warn('⚠️ Transfer Failed');
+        return res.status(400).json({
+          success: false,
+          error: sendMoney.data.message
+        });
+      }
+    } catch (error) {
+      console.error('❌ Error:', error);
+      return res.status(500).json({
+        success: false,
+        error: 'An error occurred while processing the transfer.'
+      });
     }
-)
+});
 
-console.log(sendMoney)
-
-if (sendMoney.data.status === 'success') {
-    console.log('✅ Transfer Successful:', sendMoney.data);
-} else {
-    console.warn('⚠️ Transfer Failed:', sendMoney.data);
-}
-    console.log(sendMoney.data)
-
-})
+  
 
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);

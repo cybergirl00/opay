@@ -6,6 +6,7 @@ import axios from 'axios';
 import { useUserData } from '@/lib/zustand';
 import { formatDate, formattedCurrency } from '@/lib/data';
 import LoadingModal from '@/components/LoadingModal';
+import { flutterwaveKey } from '@/lib/keys';
 
 // Define the shape of a transaction
 interface Transaction {
@@ -34,7 +35,7 @@ const Transactions: React.FC = () => {
                     `https://api.flutterwave.com/v3/payout-subaccounts/${userData.accountRef}/transactions?fetch_limit=10`,
                     {
                         headers: {
-                            Authorization: "Bearer FLWSECK-b775d93a3b14a0be4427b31a3f03cd4a-19461e011d9vt-X",
+                            Authorization: `Bearer ${flutterwaveKey}`,
                             "Content-Type": "application/json",
                         },
                     }

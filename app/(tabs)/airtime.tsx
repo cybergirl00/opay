@@ -2,21 +2,21 @@ import { Image, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity
 import React, { useEffect, useState } from 'react';
 import CustomHeader from '@/components/CustomHeader';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { airtimePlans, formattedCurrency, providers } from '@/lib/data';
-import airtel from '@/assets/images/airtel.png';
+import { airtimePlans, formattedCurrency, prefixToProvider, providers } from '@/lib/data';
 import glo from '@/assets/images/glo.png';
-import mtn from '@/assets/images/mtn.png';
-import mobile from '@/assets/images/9mobile.png';
 import LoadingModal from '@/components/LoadingModal';
 import CustomModal from '@/components/CustomModal';
 import CustomButton from '@/components/CustomButton';
 import { useUserData } from '@/lib/zustand';
 import axios from 'axios';
 import { router } from 'expo-router';
+import { flutterwaveKey, password, username } from '@/lib/keys';
+
 
 const Airtime = () => {
+  // USESTATES 
     const [openModal, setOpenModal] = useState(false);
-    const [selectedProvider, setSelectedProvider] = useState(glo); // Default provider
+    const [selectedProvider, setSelectedProvider] = useState(glo); 
     const [isLoading, setIsLoading] = useState(false)
     const [openCustomModal, setOpenCustomModal] = useState(false);
     const [price, setPrice] = useState(0);
@@ -24,33 +24,10 @@ const Airtime = () => {
      const [Balance, setBalance] = useState(0);
      const [paymentMethod, setPaymentMethod] = useState('wallet')
      const [providerName, setProviderName] = useState('glo')
-    
     const userData = useUserData((state) => state.data);
     const [phoneNumber, setPhoneNumber] = useState(userData.phone);
-    
 
-    // Prefix to provider mapping
-    const prefixToProvider = {
-        '070': glo,   // Glo
-        '080': glo,   // Glo
-        '081': mtn,   // MTN
-        '082': mtn,   // MTN
-        '083': mtn,   // MTN
-        '084': mtn,   // MTN
-        '085': mtn,   // MTN
-        '086': mtn,   // MTN
-        '087': mtn,   // MTN
-        '088': mtn,   // MTN
-        '090': airtel,   // Airtel
-        '091': mobile,   // 9Mobile
-        '092': mobile,   // 9Mobile
-        '093': mobile,   // 9Mobile
-        '094': mobile,   // 9Mobile
-        '095': mobile,   // 9Mobile
-        '096': mobile,   // 9Mobile
-    };
-    
-
+ 
     // Function to map phone number prefix to provider
     const getProviderFromPhoneNumber = (number: string) => {
         const prefix = number.slice(0, 3); // Extract the first 3 digits
@@ -94,7 +71,7 @@ const Airtime = () => {
               `https://api.flutterwave.com/v3/payout-subaccounts/${userData.accountRef}/balances?currency=NGN`,
               {
                 headers: {
-                  Authorization: `Bearer FLWSECK-b775d93a3b14a0be4427b31a3f03cd4a-19461e011d9vt-X` // Replace with your actual secret key
+                  Authorization: `Bearer ${flutterwaveKey}` 
                 }
               }
             );
@@ -117,10 +94,7 @@ const Airtime = () => {
             setIsLoading(true);
             console.log(price)
             try {
-
-                // MAKE TRANSFER TO THE OWNER ACCOUNT
-
-                const sendMoney = await axios.post('https://4193-197-211-63-167.ngrok-free.app/transfer', {
+                const sendMoney = await axios.post('https://c87a-197-211-63-167.ngrok-free.app/transfer', {
                             account_number: '1542363659',
                             account_bank: '044',
                             amount: price,
@@ -129,31 +103,20 @@ const Airtime = () => {
                             currency: 'NGN'
                 });
 
-                if(sendMoney.data.staus === 'success') {
+                if(sendMoney.data.status === 'success') {
                        // BUY AIRTIME
-                const response = await axios.get(`https://vtu.ng/wp-json/api/v1/airtime?username=Cybergirl&password=Cybergirl@2005&phone=${phoneNumber}&network_id=${providerName}&amount=${price}`);
+                const response = await axios.get(`https://vtu.ng/wp-json/api/v1/airtime?username=${username}&password=${password}&phone=${phoneNumber}&network_id=${providerName}&amount=${price}`);
               console.log(response.data);
               if(response.data.code === 'success') {
                 setIsLoading(false);
-
-                await axios.post('https://4193-197-211-63-167.ngrok-free.app/transaction', {
-                    ref: sendMoney.data.data.id,
-                    userId: userData.clerkId,
-                    type: 'airtime',
-                    points: 2
-                   }).then(() => {
-                    setIsLoading(false)
-                    // PUSH TO RECIPT SCREEN 
                 router.push({
-                    pathname: '/transaction-details',
-                    params: {
-                        remark: response.data.message,
-                        amount: price,
-                        date: sendMoney.data.data.created_at
-                    }
-                });
-                })
-
+                  pathname: '/transaction-details',
+                  params: {
+                      remark: response.data.message,
+                      amount: price,
+                      date: sendMoney.data.data.created_at
+                  }
+              });
 
               }
                 }
@@ -338,14 +301,15 @@ const Airtime = () => {
                         
                        </TouchableOpacity>
      
-                       <TouchableOpacity className='flex flex-row items-center justify-between rounded-lg bg-gray-100 p-3' onPress={() => switchwallet('owallet', userData.amount)}>
+                       <TouchableOpacity className='flex flex-row items-center justify-between rounded-lg bg-gray-100 p-3'
+                        onPress={() => switchwallet('owallet', userData.amount ?? 0)}>
                          <View className='flex flex-row items-center gap-3 '>
                            <View className='bg-green-100 w-fit h-fit p-2 rounded-full'>
                             
                            <FontAwesome name='money' color={'#02bb86'} />
                            </View>
                           
-                           <Text className='font-bold '>OWallet <Text className='text-gray-500 font-semibold'>({formattedCurrency(userData?.amount)})</Text></Text>
+                           <Text className='font-bold '>OWallet <Text className='text-gray-500 font-semibold'>({formattedCurrency(userData?.amount ?? 0)})</Text></Text>
                          </View>
      
                          {paymentMethod === 'owallet' && (  <FontAwesome name='check' size={20} color={'#02bb86'}  /> )}

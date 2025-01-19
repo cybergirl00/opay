@@ -19,7 +19,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.dammy2005.opay"
     },
     "web": {
       "bundler": "metro",
@@ -33,6 +34,11 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "d7acbac3-2eea-4f80-afb7-eb10d09fe0d7"
+      }
     }
   }
 }

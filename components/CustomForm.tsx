@@ -24,7 +24,7 @@ const CustomForm = ({ title, placeholder, type, onChangeText }: FormProps) => {
                         <Text className='text-lg font-semibold'>{title}</Text>
                         {type !== 'phone-pad' ? (
                             <View 
-                            className='bg-gray-200 p-1.5 rounded-lg'
+                            className='bg-gray-100 border border-gray-200 p-1.5 rounded-lg'
                             >
                                 <TextInput 
                                     placeholder={placeholder}

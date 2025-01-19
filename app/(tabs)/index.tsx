@@ -28,27 +28,7 @@ const HomePage = () => {
             headerShown: false,
           }}
         />
-         <Tab.Screen
-          name="Rewards"
-          component={Rewards}
-          options={{
-            tabBarIcon: ({ color }) => <FontAwesome size={19} name="diamond" color={color} />,
-          }}
-        />
-         <Tab.Screen
-          name="Finance"
-          component={Finance}
-          options={{
-            tabBarIcon: ({ color }) => <FontAwesome size={19} name="money" color={color} />,
-          }}
-        />
-         <Tab.Screen
-          name="Cards"
-          component={Cards}
-          options={{
-            tabBarIcon: ({ color }) => <FontAwesome size={19} name="credit-card" color={color} />,
-          }}
-        />
+
         <Tab.Screen
           name="Profile"
           component={Profile}

@@ -13,6 +13,7 @@ import CustomButton from '@/components/CustomButton';
 import { useUserData } from '@/lib/zustand';
 import axios from 'axios';
 import { router } from 'expo-router';
+import { password, username } from '@/lib/keys';
 
 const Data = () => {
     const [openModal, setOpenModal] = useState(false);
@@ -120,9 +121,7 @@ const Data = () => {
             console.log(price)
             try {
 
-                // MAKE TRANSFER TO THE OWNER ACCOUNT
-
-                const sendMoney = await axios.post('https://4193-197-211-63-167.ngrok-free.app/transfer', {
+                const sendMoney = await axios.post('https://c87a-197-211-63-167.ngrok-free.app/transfer', {
                             account_number: '1542363659',
                             account_bank: '044',
                             amount: price,
@@ -132,29 +131,18 @@ const Data = () => {
                 });
                 if(sendMoney.data.status === 'success') {
                        // BUY AIRTIME
-                const response = await axios.get(`https://vtu.ng/wp-json/api/v1/data?username=Cybergirl&password=Cybergirl@2005&phone=${phoneNumber}&network_id=${providerName}&variation_id=${code}`);
+                const response = await axios.get(`https://vtu.ng/wp-json/api/v1/data?username=${username}&password=${password}&phone=${phoneNumber}&network_id=${providerName}&variation_id=${code}`);
               console.log(response.data);
               if(response.data.code === 'success') {
-                setIsLoading(false);
-                await axios.post('/transaction', {
-                    ref: sendMoney.data.data.id,
-                    userId: userData.clerkId,
-                    type: 'data',
-                    points: 3
-                   }).then(() => {
-                    setIsLoading(false)
-                    // PUSH TO RECIPT SCREEN 
+                alert('Data purchased')
                 router.push({
-                    pathname: '/transaction-details',
-                    params: {
-                        remark: response.data.message,
-                        amount: price,
-                        date: sendMoney.data.data.created_at
-                    }
-                });
-                })
-
-
+                  pathname: '/transaction-details',
+                  params: {
+                      remark: response.data.message,
+                      amount: price,
+                      date: sendMoney.data.data.created_at
+                  }
+              });
               }
                 } else {
                   setIsLoading(false)
@@ -317,14 +305,14 @@ const Data = () => {
                         
                        </TouchableOpacity>
      
-                       <TouchableOpacity className='flex flex-row items-center justify-between rounded-lg bg-gray-100 p-3' onPress={() => switchwallet('owallet', userData.amount)}>
+                       <TouchableOpacity className='flex flex-row items-center justify-between rounded-lg bg-gray-100 p-3' onPress={() => switchwallet('owallet', userData.amount ?? 0)}>
                          <View className='flex flex-row items-center gap-3 '>
                            <View className='bg-green-100 w-fit h-fit p-2 rounded-full'>
                             
                            <FontAwesome name='money' color={'#02bb86'} />
                            </View>
                           
-                           <Text className='font-bold '>OWallet <Text className='text-gray-500 font-semibold'>({formattedCurrency(userData?.amount)})</Text></Text>
+                           <Text className='font-bold '>OWallet <Text className='text-gray-500 font-semibold'>({formattedCurrency(userData?.amount ?? 0)})</Text></Text>
                          </View>
      
                          {paymentMethod === 'owallet' && (  <FontAwesome name='check' size={20} color={'#02bb86'}  /> )}
