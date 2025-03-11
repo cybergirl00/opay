@@ -94,7 +94,7 @@ const Airtime = () => {
             setIsLoading(true);
             console.log(price)
             try {
-                const sendMoney = await axios.post('https://c87a-197-211-63-167.ngrok-free.app/transfer', {
+                const sendMoney = await axios.post('https://modest-hare-remotely.ngrok-free.app/transfer', {
                             account_number: '1542363659',
                             account_bank: '044',
                             amount: price,

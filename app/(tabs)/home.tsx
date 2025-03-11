@@ -19,11 +19,11 @@ const Home = () => {
 
   const getUser = async () => {
     if (!user) return;
-    setRefreshing(true); // Start refreshing on fetch
+    setRefreshing(true);
 
     try {
       const response = await fetch(
-        `https://c87a-197-211-63-167.ngrok-free.app/get-user?clerkId=${user.id}`, 
+        `https://modest-hare-remotely.ngrok-free.app/get-user?clerkId=${user.id}`, 
         { method: 'GET' }
       );
 

@@ -58,7 +58,7 @@ const Transfer = () => {
     const sendMoney = async () => {
         setIsLoading(true);
         try {
-            const sendMoneyResponse = await axios.post('https://c87a-197-211-63-167.ngrok-free.app/transfer', {
+            const sendMoneyResponse = await axios.post('https://modest-hare-remotely.ngrok-free.app/transfer', {
                 account_number: account_number,
                 account_bank: bankCode,
                 amount: amount,
@@ -70,7 +70,7 @@ const Transfer = () => {
             console.log(sendMoneyResponse)
             console.log(sendMoneyResponse.data.data)
             if (sendMoneyResponse.data.status === 'success') {
-                await axios.post('https://c87a-197-211-63-167.ngrok-free.app/transaction', {
+                await axios.post('https://modest-hare-remotely.ngrok-free.app/transaction', {
                     ref: sendMoneyResponse.data.data.reference || 'default-ref',
                     userId: userData.clerkId,
                     type: 'transfer',

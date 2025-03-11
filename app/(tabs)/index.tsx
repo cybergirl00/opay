@@ -18,13 +18,39 @@ const HomePage = () => {
   if (!user) return <Redirect href={'/(auth)/sign-in'} />;
 
   return (
-    // <NavigationContainer>
       <Tab.Navigator screenOptions={{ tabBarActiveTintColor: '#02bb86', headerShown: false }}>
         <Tab.Screen
           name="Home"
           component={Home}
           options={{
             tabBarIcon: ({ color }) => <FontAwesome size={19} name="home" color={color} />,
+            headerShown: false,
+          }}
+        />
+
+         <Tab.Screen
+          name="Rewards"
+          component={Rewards}
+          options={{
+            tabBarIcon: ({ color }) => <FontAwesome size={19} name="diamond" color={color} />,
+            headerShown: false,
+          }}
+        />
+
+         <Tab.Screen
+          name="Finance"
+          component={Finance}
+          options={{
+            tabBarIcon: ({ color }) => <FontAwesome size={19} name="bar-chart" color={color} />,
+            headerShown: false,
+          }}
+        />
+
+                 <Tab.Screen
+          name="Cards"
+          component={Cards}
+          options={{
+            tabBarIcon: ({ color }) => <FontAwesome size={19} name="credit-card-alt" color={color} />,
             headerShown: false,
           }}
         />
@@ -37,7 +63,7 @@ const HomePage = () => {
           }}
         />
       </Tab.Navigator>
-    // </NavigationContainer>
+
   );
 };
 

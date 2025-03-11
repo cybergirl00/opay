@@ -1,14 +1,14 @@
 import { StyleSheet, Text, View } from 'react-native'
 import React from 'react'
 
-const Rewards = () => {
+const Loan = () => {
   return (
     <View>
-      <Text>Rewards</Text>
+      <Text>Loan</Text>
     </View>
   )
 }
 
-export default Rewards
+export default Loan
 
 const styles = StyleSheet.create({})

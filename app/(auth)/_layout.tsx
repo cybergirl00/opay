@@ -20,9 +20,8 @@ const Layout = () => {
         <Stack.Screen name="otp" options={{ headerShown: false }} />
       </Stack>
 
-
       {pathname !== '/otp' && (
-        <View>
+        <View> 
         <AuthFooter />
        </View>
       )}

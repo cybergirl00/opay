@@ -4,6 +4,21 @@ import mtn from '@/assets/images/mtn.png'
 import mobile from '@/assets/images/9mobile.png'
 
 
+export const bank = [
+    {
+        id: 1,
+        title: 'To Opay',
+        icon: 'envelope-o',
+        to: '/bank-transfer'
+    },
+    {
+        id: 2,
+        title: 'To Bank',
+        icon: 'bank',
+        to: '/bank-transfer'
+    },
+]
+
 export const vtu = [
     {
         id: 1,
@@ -18,17 +33,30 @@ export const vtu = [
         to: '/data'
     },
     {
-        id: 1,
-        title: 'To Opay',
-        icon: 'envelope-o',
-        to: '/bank-transfer'
+        id: 3,
+        title: 'Betting',
+        icon: 'soccer-ball-o',
+        to: '/data'
     },
     {
-        id: 2,
-        title: 'To Bank',
-        icon: 'bank',
-        to: '/bank-transfer'
+        id: 4,
+        title: 'Tv',
+        icon: 'tv',
+        to: '/data'
     },
+    {
+        id: 5,
+        title: 'Safebox',
+        icon: 'inbox',
+        to: '/data'
+    },
+    {
+        id: 6,
+        title: 'Loan',
+        icon: 'money',
+        to: '/loan'
+    },
+   
 ]
 
 export const prefixToProvider = {
