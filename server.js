@@ -54,6 +54,14 @@ const transactionsSchema = new mongoose.Schema({
 const Transaction = mongoose.model("Transactions", transactionsSchema);
 
 
+function verifySignature(req) {
+    const secret = 'cyberopay_secret_hash_180505'; // Your Flutterwave secret hash
+    const signature = req.headers['verif-hash'];
+    if (!signature || signature !== secret) {
+        return false;
+    }
+    return true;
+}
 // Create a Flutterwave Subaccount
 app.post('/create-subaccount', async (req, res) => {
     const { email, firstName, lastName, phone } = req.body;
@@ -222,10 +230,10 @@ app.post('/transfer', async (req, res) => {
         }
       );
 
-      console.log('Transfer Response:', sendMoney.data);
+    //   console.log('Transfer Response:', sendMoney.data);
       
       if (sendMoney.data.status === 'success') {
-        console.log('✅ Transfer Successful');
+        // console.log('✅ Transfer Successful');
         // Send response directly without assigning it to a variable
         return res.json(sendMoney.data); 
       } else {
@@ -244,7 +252,43 @@ app.post('/transfer', async (req, res) => {
     }
 });
 
-  
+app.post('/api/flutterwave/webhook', (req, res) => {
+    console.log('Webhook received:', req.body);
+
+    // Verify the webhook signature (if applicable)
+    if (!verifySignature(req)) {
+        return res.status(400).json({ status: 'error', message: 'Invalid signature' });
+    }
+
+    // Handle the webhook event
+    const event = req.body;
+    // console.log(event.data)
+
+    // Check the event type and handle accordingly
+    switch (event.event) {
+        case 'transfer.completed':
+            console.log('Transfer successful:', event.data);
+            return res.status(200).json({ status: 'success', message: 'Transfer completed' });
+
+        case 'charge.completed':
+            console.log('Payment completed:', event.data);
+            return res.status(200).json({ status: 'success', message: 'Payment completed' });
+
+            case 'virtualaccount.received':  // Incoming transfer to a virtual account
+            console.log('Money added to virtual account:', event.data);
+            return res.status(200).json({ status: 'success', message: 'Virtual account credited' });
+
+            case 'payment.completed':  // General payment event
+            console.log('Payment completed:', event.data);
+            return res.status(200).json({ status: 'success', message: 'Payment completed' });
+
+           
+
+        default:
+            console.log('Unsupported event:', event.event);
+            return res.status(400).json({ status: 'error', message: 'Unsupported event type' });
+    }
+});
 
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
