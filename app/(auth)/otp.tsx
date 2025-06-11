@@ -13,13 +13,15 @@ import { useSignUp } from '@clerk/clerk-expo';
 import axios from 'axios';
 import otpimg from '@/assets/images/otp.png'
 import LoadingModal from '@/components/LoadingModal';
+import { createCredaAccount } from '@/actions/creda.actions';
+import { storeUserData } from '@/lib/storage';
 
 const OtpScreen = () => {
   const [isLoading , setisLoading ] = useState(false)
-  const { email, firstName, lastName, phone, clerkId } = useLocalSearchParams();
+  const { email, firstName, lastName, phone, clerkId, bvn } = useLocalSearchParams();
   const { isLoaded, signUp, setActive,  } = useSignUp();
-  const [otp, setOtp] = useState(['', '', '', '', '', '']); // State to store each digit of the OTP
-  const inputs = useRef<Array<TextInput | null>>([]); // Refs to handle focus between inputs
+  const [otp, setOtp] = useState(['', '', '', '', '', '']); 
+  const inputs = useRef<Array<TextInput | null>>([]); 
 
   // Function to handle change in each input box
   const handleChange = (value: string, index: number) => {
@@ -36,43 +38,6 @@ const OtpScreen = () => {
     }
   };
 
-  // ADD USER TO DOCS AND CREATE A FLUTTERWAVE SUBACCOUNT
-  const addUserAndCreateSubaccount = async () => {
-    setisLoading(true);
-    try {
-        // Step 1: Create a customer on Paystack
-        const response = await axios.post(
-            'https://c87a-197-211-63-167.ngrok-free.app/create-subaccount',
-            {
-                email,
-               firstName,
-                lastName,
-              phone,
-            }
-        );
-
-        console.log(response)
-        await axios.post('https://c87a-197-211-63-167.ngrok-free.app/users', {
-            email,
-            clerkId,
-            firstName,
-            lastName,
-            accountNumber: response.data.data.nuban,
-            accountRef: response.data.data.account_reference,
-            bankName: response.data.data.bank_name,
-            amount: 0,
-            phone: phone
-        });
-
-        router.push('/');
-    } catch (error) {
-        console.error('Error:', error);
-        alert('An error occurred during registration.');
-    } finally {
-        setisLoading(false); // Ensure loading stops even on error
-    }
-};
-
 
   const onPressVerify = async (fullOtp: string) => {
     if (!isLoaded) {
@@ -85,7 +50,25 @@ const OtpScreen = () => {
       });
 
       if (completeSignUpResult.status === 'complete') {
-        await addUserAndCreateSubaccount(); // Call the function after successful OTP verification
+            const creda = await createCredaAccount({
+                  email: email.toString(),
+                  bvn: bvn.toString(),
+                  lastName: lastName.toString(),
+                  firstName: firstName.toString(),
+                  phoneNumber: phone.toString()
+                })
+        
+                if(creda?.status === 201) {
+                  console.log('User created with creda');
+                  const data = {
+                     email: email.toString(),
+                  bvn: bvn.toString(),
+                  lastName: lastName.toString(),
+                  firstName: firstName.toString(),
+                  phoneNumber: phone.toString()
+                  }
+                 storeUserData(data)
+                }
         await setActive({ session: completeSignUpResult.createdSessionId });
       } else {
         console.error(JSON.stringify(completeSignUpResult, null, 2));

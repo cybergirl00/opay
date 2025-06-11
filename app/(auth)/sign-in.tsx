@@ -51,7 +51,7 @@ const SignIn = () => {
   }, [isLoaded, email, password])
 
   return (
-    <SafeAreaView className='pt-5'>
+    <SafeAreaView className='pt-10'>
       <View className='flex items-center p-3'>
         <Image source={logo} className='h-10 w-10' />
       </View>

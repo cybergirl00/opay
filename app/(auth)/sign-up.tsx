@@ -1,4 +1,4 @@
-import { View, Text,  ScrollView } from 'react-native'
+import { View, Text,  ScrollView, KeyboardAvoidingView, Platform } from 'react-native'
 import React, { useState } from 'react'
 import { Image } from 'react-native'
 import logo from '@/assets/images/icon.png'
@@ -7,6 +7,9 @@ import CustomButton from '@/components/CustomButton'
 import { router } from 'expo-router'
 import { isClerkAPIResponseError, useSignUp } from '@clerk/clerk-expo'
 import { ClerkAPIError} from '@clerk/types'
+import { createCredaAccount } from '@/actions/creda.actions'
+import { useUserData } from '@/lib/zustand'
+import { storeUserData } from '@/lib/storage'
 const SignUp = () => {
   const { isLoaded, signUp, setActive } = useSignUp();
   // USESTATES
@@ -19,6 +22,9 @@ const SignUp = () => {
   const [customError, setCustomError] = useState('')
   const [error, setError] = useState<ClerkAPIError[]>();
   const [isLoading, setIsLoading] = useState(false)
+  const [bvn, setBVN] = useState('');
+
+  const { data, setData } = useUserData((state) => state);
 
   
   const onSignUpPress = async () => {
@@ -44,16 +50,17 @@ const SignUp = () => {
         })
   
         await signUp.prepareEmailAddressVerification({ strategy: 'email_code' })
-        router.replace({
-          pathname: '/otp',
-          params: {
-            email,
-            firstName,
-            lastName,
-            phone,
-            clerkId: response.id
-          }
-        })
+                       router.replace({
+                          pathname: '/otp',
+                          params: {
+                            email,
+                            firstName,
+                            lastName,
+                            phone,
+                            clerkId: response.id,
+                            bvn
+                          }
+                        })
       } catch (err: any) {
         if (isClerkAPIResponseError(err)) setError(err.errors)
         console.error(JSON.stringify(err, null, 2))
@@ -64,6 +71,7 @@ const SignUp = () => {
     // console.log('Pressed')
   }
   return (
+    <KeyboardAvoidingView className='flex-1 bg-white' behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
     <View>
     <ScrollView className='pt-12'>
     
@@ -83,13 +91,13 @@ const SignUp = () => {
     <CustomForm 
       title='First Name'
       placeholder='Enter your first name'
-      type='text'
+      type='default'
       onChangeText={setFirstName} 
       />
       <CustomForm 
       title='Last Name'
       placeholder='Enter your last name'
-      type='text'
+      type='default'
       onChangeText={setLastName} 
       />
       <CustomForm 
@@ -97,6 +105,12 @@ const SignUp = () => {
       placeholder='Enter your email'
       type='email-address'
       onChangeText={setEmail} 
+      />
+       <CustomForm 
+      title='BVN'
+      placeholder='Enter your bvn '
+      type='default'
+      onChangeText={setBVN} 
       />
        <CustomForm 
       title='Phone Number'
@@ -144,6 +158,7 @@ const SignUp = () => {
     </View>
    </ScrollView>
    </View>
+   </KeyboardAvoidingView>
   )
 }
 

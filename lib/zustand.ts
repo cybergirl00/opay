@@ -24,7 +24,7 @@ interface UserDataStore {
 }
 
 export const useUserData = create<UserDataStore>((set) => ({
-    data: {},  // Now it expects the UserData structure
+    data: {},
     setData: (newData) => set({ data: newData }),
 }));
 

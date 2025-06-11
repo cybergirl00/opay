@@ -50,8 +50,8 @@ const CustomForm = ({ title, placeholder, type, onChangeText }: FormProps) => {
                                             setFormattedValue(text);
                                         }}
                                         withDarkTheme
-                                        containerStyle={{ backgroundColor: '#e5e7eb',  }}
-                                        textContainerStyle={{ backgroundColor: '#e5e7eb', width: '100%' }}
+                                        containerStyle={{ backgroundColor: '#f3f4f6', height: 50, width: '100%', borderWidth: 1, borderColor: '#e5e7eb' }}
+                                        textContainerStyle={{ backgroundColor: '#f3f4f6', width: '100%' }}
                                     />
                                 </View>
                             </View>
