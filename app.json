@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "opay",
+    "name": "Opay Clone",
     "slug": "opay",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -8,24 +8,24 @@
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "splash": {
-      "image": "./assets/images/splash.png",
+      "image": "./assets/images/AppIcon.jpeg",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#2dcb74"
     },
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "foregroundImage": "./assets/images/AppIcon.jpeg",
+        "backgroundColor": "#2dcb74"
       },
       "package": "com.dammy2005.opay"
     },
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/AppIcon.jpeg"
     },
     "plugins": [
       "expo-router",

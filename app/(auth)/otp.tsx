@@ -62,7 +62,6 @@ const OtpScreen = () => {
                   console.log('User created with creda');
                   const data = {
                      email: email.toString(),
-                  bvn: bvn.toString(),
                   lastName: lastName.toString(),
                   firstName: firstName.toString(),
                   phoneNumber: phone.toString()

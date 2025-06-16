@@ -7,10 +7,11 @@ import glo from '@/assets/images/glo.png';
 import LoadingModal from '@/components/LoadingModal';
 import CustomModal from '@/components/CustomModal';
 import CustomButton from '@/components/CustomButton';
-import { useUserData } from '@/lib/zustand';
+import { storeBalance, useUserData } from '@/lib/zustand';
 import axios from 'axios';
 import { router } from 'expo-router';
 import { flutterwaveKey, password, username } from '@/lib/keys';
+import { buyAirtime } from '@/actions/creda.actions';
 
 
 const Airtime = () => {
@@ -27,13 +28,15 @@ const Airtime = () => {
     const userData = useUserData((state) => state.data);
     const [phoneNumber, setPhoneNumber] = useState(userData.phone);
 
+    const { balance } = storeBalance((state) => state)
+
  
     // Function to map phone number prefix to provider
     const getProviderFromPhoneNumber = (number: string) => {
         const prefix = number.slice(0, 3); // Extract the first 3 digits
         const provider = prefixToProvider[prefix];
         if (provider) {
-            setSelectedProvider(provider); // Update the provider based on the prefix
+            setSelectedProvider(provider);
         }
     };
 
@@ -64,70 +67,21 @@ const Airtime = () => {
         setCheckoutPrice(price)
     }
 
-    useEffect(() => {
-        const getBalance = async () => {
-          try {
-            const response = await axios.get(
-              `https://api.flutterwave.com/v3/payout-subaccounts/${userData.accountRef}/balances?currency=NGN`,
-              {
-                headers: {
-                  Authorization: `Bearer ${flutterwaveKey}` 
-                }
-              }
-            );
-            const fetchedBalance = response.data.data.available_balance; 
-            setBalance(fetchedBalance);
-            // console.log(fetchedBalance)
-          } catch (error) {
-            console.error('Error fetching balance:', error);
-          }
-        };
-    
-        getBalance();
-      }, [userData.accountRef]);
 
 
-      const buyAirtime = async  () => {
-        if(checkoutPrice < price ) {
-            alert('Insufficient fund, please fund your wallet')
-        } else {
-            setIsLoading(true);
-            console.log(price)
-            try {
-                const sendMoney = await axios.post('https://modest-hare-remotely.ngrok-free.app/transfer', {
-                            account_number: '1542363659',
-                            account_bank: '044',
-                            amount: price,
-                            debit_subaccount: userData.accountRef,
-                            narration: `Airtime Purchased by ${userData.firstName} ${userData.lastName}`,
-                            currency: 'NGN'
-                });
+      const purchaseAirtime = async  () => {
+        setIsLoading(true)
+        try {
+          const response = await buyAirtime(phoneNumber, providerName, price)
 
-                if(sendMoney.data.status === 'success') {
-                       // BUY AIRTIME
-                const response = await axios.get(`https://vtu.ng/wp-json/api/v1/airtime?username=${username}&password=${password}&phone=${phoneNumber}&network_id=${providerName}&amount=${price}`);
-              console.log(response.data);
-              if(response.data.code === 'success') {
-                setIsLoading(false);
-                router.push({
-                  pathname: '/transaction-details',
-                  params: {
-                      remark: response.data.message,
-                      amount: price,
-                      date: sendMoney.data.data.created_at
-                  }
-              });
+          console.log(response?.data);
 
-              }
-                }
-
-
-                setIsLoading(false)
-                
-            } catch (error) {
-                console.log(error);
-                setIsLoading(false)
-            }
+          setIsLoading(false)
+        } catch (error) {
+          console.log(error)
+          setIsLoading(false)
+        } finally{
+          setIsLoading(false)
         }
       }
 
@@ -295,7 +249,7 @@ const Airtime = () => {
                            <FontAwesome name='money' color={'#02bb86'} />
                            </View>
                           
-                           <Text className='font-bold '>Wallet <Text className='text-gray-500 font-semibold'>({formattedCurrency(Balance && Balance)})</Text></Text>
+                           <Text className='font-bold '>Wallet <Text className='text-gray-500 font-semibold'>({formattedCurrency(balance && balance)})</Text></Text>
                          </View>
                          {paymentMethod === 'wallet' && (  <FontAwesome name='check' size={20} color={'#02bb86'}  /> )}
                         
@@ -318,13 +272,13 @@ const Airtime = () => {
                    </View>
      
                    <View>
-                     {Balance < price ? 
+                     {balance < price ? 
                      <View>
                        <Text className='text-center text-sm font-semibold text-red-500'>Insufficient fund, Please fund your wallet</Text>
                        </View>
                      : 
                      <View>
-                       <CustomButton name='Pay' onPress={buyAirtime} />
+                       <CustomButton name='Pay' onPress={purchaseAirtime} />
                      </View>
                      }
      

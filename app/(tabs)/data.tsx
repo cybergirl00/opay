@@ -1,8 +1,8 @@
-import { Image, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Image, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, SafeAreaView } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import CustomHeader from '@/components/CustomHeader';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { airtimePlans, dataPlans, formattedCurrency, providers } from '@/lib/data';
+import {  formattedCurrency, providers } from '@/lib/data';
 import airtel from '@/assets/images/airtel.png';
 import glo from '@/assets/images/glo.png';
 import mtn from '@/assets/images/mtn.png';
@@ -10,10 +10,8 @@ import mobile from '@/assets/images/9mobile.png';
 import LoadingModal from '@/components/LoadingModal';
 import CustomModal from '@/components/CustomModal';
 import CustomButton from '@/components/CustomButton';
-import { useUserData } from '@/lib/zustand';
-import axios from 'axios';
-import { router } from 'expo-router';
-import { password, username } from '@/lib/keys';
+import { storeBalance, useUserData } from '@/lib/zustand';
+import { buyDataPlan, fetchRates } from '@/actions/creda.actions';
 
 const Data = () => {
     const [openModal, setOpenModal] = useState(false);
@@ -22,13 +20,13 @@ const Data = () => {
     const [openCustomModal, setOpenCustomModal] = useState(false);
     const [price, setPrice] = useState(0);
     const [checkoutPrice, setCheckoutPrice] = useState(0)
-     const [Balance, setBalance] = useState(0);
      const [paymentMethod, setPaymentMethod] = useState('wallet')
      const [providerName, setProviderName] = useState('glo')
      const [planCode, setPlanCode] = useState('')
-    
-    const userData = useUserData((state) => state.data);
-    const [phoneNumber, setPhoneNumber] = useState(userData.phone);
+     const [dataPlans, setDataPlans] = useState([])
+     const { balance } = storeBalance((state) => state)
+     const { data  } = useUserData((state) => state)
+    const [phoneNumber, setPhoneNumber] = useState(data.phone);
     
 
     // Prefix to provider mapping
@@ -91,75 +89,41 @@ const Data = () => {
     }
 
     useEffect(() => {
-        const getBalance = async () => {
+        const getRates = async () => {
           try {
-            const response = await axios.get(
-              `https://api.flutterwave.com/v3/payout-subaccounts/${userData.accountRef}/balances?currency=NGN`,
-              {
-                headers: {
-                  Authorization: `Bearer FLWSECK-b775d93a3b14a0be4427b31a3f03cd4a-19461e011d9vt-X` // Replace with your actual secret key
-                }
-              }
-            );
-            const fetchedBalance = response.data.data.available_balance; 
-            setBalance(fetchedBalance);
-            // console.log(fetchedBalance)
+
+            const rates = await fetchRates();
+
+            console.log(rates.rates)
+            setDataPlans(rates.rates)
+            
+            
           } catch (error) {
-            console.error('Error fetching balance:', error);
+            console.log(error)
           }
         };
     
-        getBalance();
-      }, [userData.accountRef]);
+        getRates();
+      }, []);
 
 
       const buyData = async  (code: string) => {
-        if(checkoutPrice < price ) {
-            alert('Insufficient fund, please fund your wallet')
-        } else {
-            setIsLoading(true);
-            console.log(price)
-            try {
+        setIsLoading(true)
+       try {
+        const response = await buyDataPlan(code, phoneNumber);
 
-                const sendMoney = await axios.post('https://c87a-197-211-63-167.ngrok-free.app/transfer', {
-                            account_number: '1542363659',
-                            account_bank: '044',
-                            amount: price,
-                            debit_subaccount: userData.accountRef,
-                            narration: `Mobile data Purchased by ${userData.firstName} ${userData.lastName}`,
-                            currency: 'NGN'
-                });
-                if(sendMoney.data.status === 'success') {
-                       // BUY AIRTIME
-                const response = await axios.get(`https://vtu.ng/wp-json/api/v1/data?username=${username}&password=${password}&phone=${phoneNumber}&network_id=${providerName}&variation_id=${code}`);
-              console.log(response.data);
-              if(response.data.code === 'success') {
-                alert('Data purchased')
-                router.push({
-                  pathname: '/transaction-details',
-                  params: {
-                      remark: response.data.message,
-                      amount: price,
-                      date: sendMoney.data.data.created_at
-                  }
-              });
-              }
-                } else {
-                  setIsLoading(false)
-                  alert('Transaction failed')
-                }
-                
-            } catch (error) {
-                console.log(error);
-                setIsLoading(false)
-            } finally {
-              setIsLoading(false)
-            }
+        if(response?.status === 200) {
+          setIsLoading(false);
+          setOpenCustomModal(false)
         }
+       } catch (error) {
+        console.log(error)
+        setIsLoading(false)
+       } finally {setIsLoading(false)}
       }
 
     return (
-        <>
+        <SafeAreaView className='pt-7 flex-1 bg-white'>
         <View>
             <CustomHeader title='Data' left='History' leftLink='/' />
 
@@ -220,11 +184,11 @@ const Data = () => {
             <View style={styles.topUpSection}>
         <Text style={styles.topUpText}>Top Up</Text>
         <View style={styles.plansContainer}>
-          {dataPlans.map((plan) => (
+          {dataPlans.map((plan: {price: number, duration: string,networkName: string, networkId: string, networkTitle: string }) => (
             <>
-            {providerName === plan.network && (
-                <TouchableOpacity key={plan.code} style={styles.planButton} className='bg-gray-50 border border-green-100 p-2' onPress={() => customModal(plan.price, plan.code)}>
-                <Text style={styles.planText}>{plan.data}</Text>
+            {providerName === plan.networkName && (
+                <TouchableOpacity key={plan.networkId} style={styles.planButton} className='bg-gray-50 border border-green-100 p-2' onPress={() => customModal(plan.price, plan.networkId)}>
+                <Text style={styles.planText}>{plan.networkTitle}</Text>
                 <Text className='text-[8px]  pt-3 text-gray-500 font-semibold '>{plan.duration}</Text>
                 <Text className='text-[8px]  pt-3 text-gray-500 font-semibold '>{formattedCurrency(plan.price)}</Text>
               </TouchableOpacity>
@@ -293,26 +257,26 @@ const Data = () => {
      
                      <View className='p-0.5 pt-4 gap-3'>
      
-                       <TouchableOpacity className='flex flex-row items-center justify-between rounded-lg bg-gray-100 p-3' onPress={() => switchwallet('wallet', Balance)}>
+                       <TouchableOpacity className='flex flex-row items-center justify-between rounded-lg bg-gray-100 p-3' onPress={() => switchwallet('wallet', balance)}>
                          <View className='flex flex-row items-center gap-3 '>
                            <View className='bg-green-100 w-fit h-fit p-2 rounded-full'>
                            <FontAwesome name='money' color={'#02bb86'} />
                            </View>
                           
-                           <Text className='font-bold '>Wallet <Text className='text-gray-500 font-semibold'>({formattedCurrency(Balance && Balance)})</Text></Text>
+                           <Text className='font-bold '>Wallet <Text className='text-gray-500 font-semibold'>({formattedCurrency(balance && balance)})</Text></Text>
                          </View>
                          {paymentMethod === 'wallet' && (  <FontAwesome name='check' size={20} color={'#02bb86'}  /> )}
                         
                        </TouchableOpacity>
      
-                       <TouchableOpacity className='flex flex-row items-center justify-between rounded-lg bg-gray-100 p-3' onPress={() => switchwallet('owallet', userData.amount ?? 0)}>
+                       <TouchableOpacity className='flex flex-row items-center justify-between rounded-lg bg-gray-100 p-3' onPress={() => switchwallet('owallet', data.amount ?? 0)}>
                          <View className='flex flex-row items-center gap-3 '>
                            <View className='bg-green-100 w-fit h-fit p-2 rounded-full'>
                             
                            <FontAwesome name='money' color={'#02bb86'} />
                            </View>
                           
-                           <Text className='font-bold '>OWallet <Text className='text-gray-500 font-semibold'>({formattedCurrency(userData?.amount ?? 0)})</Text></Text>
+                           <Text className='font-bold '>OWallet <Text className='text-gray-500 font-semibold'>({formattedCurrency(data?.amount ?? 0)})</Text></Text>
                          </View>
      
                          {paymentMethod === 'owallet' && (  <FontAwesome name='check' size={20} color={'#02bb86'}  /> )}
@@ -321,7 +285,7 @@ const Data = () => {
                    </View>
      
                    <View>
-                     {Balance < price ? 
+                     {balance < price ? 
                      <View>
                        <Text className='text-center text-sm font-semibold text-red-500'>Insufficient fund, Please fund your wallet</Text>
                        </View>
@@ -339,7 +303,7 @@ const Data = () => {
             )}
 
             {isLoading && <LoadingModal />}
-        </>
+        </SafeAreaView>
     );
 };
 

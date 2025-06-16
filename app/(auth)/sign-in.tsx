@@ -9,6 +9,8 @@ import axios from 'axios';
 import { isClerkAPIResponseError } from '@clerk/clerk-expo';
 import { useSignIn } from '@clerk/clerk-expo'
 import { ClerkAPIError} from '@clerk/types'
+import { getUserbyEmail, signInUserbyEmail } from '@/actions/creda.actions';
+import { storeUserData } from '@/lib/storage';
 
 const SignIn = () => {
   const { signIn, setActive, isLoaded } = useSignIn()
@@ -35,9 +37,29 @@ const SignIn = () => {
       })
 
       if (signInAttempt.status === 'complete') {
-        setIsLoading(false);
-        await setActive({ session: signInAttempt.createdSessionId })
+        const findUser = await signInUserbyEmail({
+          email: email
+        });
+
+        if(findUser?.status === 200) {
+        const data = {
+             email: email.toString(),
+             lastName: findUser.data.user.lastName.toString(),
+              firstName: findUser.data.user.firstName.toString(),
+              phoneNumber: findUser.data.user.phoneNumber.toString()
+                          }
+
+                          console.log(data)
+              storeUserData(data);
+
+              await setActive({ session: signInAttempt.createdSessionId })
         router.replace('/')
+
+        setIsLoading(false)
+        } else {
+          setIsLoading(false)
+        }
+        
       } else {
         setError(undefined);
         setIsLoading(false);

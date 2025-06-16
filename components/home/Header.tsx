@@ -2,7 +2,7 @@ import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import React from 'react'
 import avatar from '@/assets/images/avatar.png'
 import FontAwesome from '@expo/vector-icons/FontAwesome'
-const Header = ({ firstName } : { firstName: string}) => {
+const Header = ({ firstName } : { firstName: string | undefined | string[]}) => {
   return (
     <View className='bg-white'>
         <View 

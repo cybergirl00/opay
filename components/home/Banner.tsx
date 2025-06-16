@@ -6,78 +6,62 @@ import { formatDate, formattedCurrency } from '@/lib/data';
 import { useUserData } from '@/lib/zustand';
 import { router } from 'expo-router';
 import { flutterwaveKey } from '@/lib/keys';
+import { fetchTransactions } from '@/actions/creda.actions';
 
 
 interface Transaction {
-  type: 'C' | 'D'; // C for credit, D for debit
+  transactionType: 'CR' | 'DB' | 'Airtime' | "Data"; 
   remarks: string | null;
   amount: number;
   reference: string;
-  date: string; // Assuming date is a string in ISO format
+  date: string; 
+  counterparty: {
+    name: string,
+    bankName: string,
+    accountNumber: string
+  }
 }
 
 
 
-const Banner = ({ accountref }: { accountref: string }) => {
+const Banner = ({ balance, id }: { balance: number, id: string }) => {
+  console.log(id)
   const [hidebalance, setHidebalance] = useState(true);
-  const [Balance, setBalance] = useState(0);
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [refreshing, setRefreshing] = useState(false); // Added for pull-to-refresh
   const userData = useUserData((state) => state.data);
 
-  const getBalance = async () => {
-    if (userData.accountRef !== null) {
-      try {
-        const response = await axios.get(
-          `https://api.flutterwave.com/v3/payout-subaccounts/${accountref}/balances?currency=NGN`,
-          {
-            headers: {
-              Authorization: `Bearer ${flutterwaveKey}`,
-            },
-          }
-        );
-        const fetchedBalance = response.data.data.available_balance;
-        setBalance(fetchedBalance);
-      } catch (error) {
-        console.error('Error fetching balance:', error);
-      }
-    }
-  };
-
-  const getTransactions = async () => {
-    if (userData.accountRef !== null) {
-      try {
-        const response = await axios.get(
-          `https://api.flutterwave.com/v3/payout-subaccounts/${userData.accountRef}/transactions?fetch_limit=1`,
-          {
-            headers: {
-              Authorization: `Bearer ${flutterwaveKey}`,
-              'Content-Type': 'application/json',
-            },
-          }
-        );
-        setTransactions(response.data.data.transactions);
-      } catch (error) {
-        console.error('Error fetching transaction data:', error);
-      }
-    }
-  };
-
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await getBalance();
-    await getTransactions();
-    setRefreshing(false);
-  };
+  
 
   useEffect(() => {
-    getBalance();
-    getTransactions();
-  }, [accountref]);
+  const getTransaction = async () => {
+    try {
+      console.log(userData);
 
+      const response = await fetchTransactions(id);
+
+      if (response?.data?.transactions) {
+        setTransactions(response.data.transactions);
+      } else {
+        setTransactions([]); // fallback to avoid undefined
+      }
+
+      console.log('Fetched transactions:', response?.data.transactions);
+    } catch (error) {
+      console.error('Error fetching transactions:', error);
+      setTransactions([]); // fallback on error
+    }
+  };
+
+  if (id) {
+    getTransaction();
+  }
+}, [id]);
+
+  
   return (
     <ScrollView
-      refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+      // refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
       className="pt-6"
     >
       <View className="w-full h-24 bg-[#02bb86] rounded-lg">
@@ -109,7 +93,7 @@ const Banner = ({ accountref }: { accountref: string }) => {
                 <Text className="text-xl text-white font-bold">****</Text>
               ) : (
                 <Text className="text-xl text-white font-bold">
-                  {formattedCurrency(Balance)}
+                  {formattedCurrency(balance ? balance : 0)}
                 </Text>
               )}
             </View>
@@ -132,7 +116,7 @@ const Banner = ({ accountref }: { accountref: string }) => {
       {!hidebalance && (
         <View className="pt-4 p-1">
           <View>
-            {transactions.slice(0, 2).map((item, index) => (
+            {Array.isArray(transactions) && transactions.slice(0, 2).map((item, index) => (
               <TouchableOpacity
                 key={index}
                 className="flex flex-row p-2 border-b border-gray-200"
@@ -144,6 +128,10 @@ const Banner = ({ accountref }: { accountref: string }) => {
                       amount: item.amount,
                       transactionNo: item?.reference,
                       date: item?.date,
+                      counterpartyName: item.counterparty.name,
+                      counterpartyBank: item.counterparty.bankName,
+                      counterpartyAccountNumber: item.counterparty.accountNumber,
+                      type: item.transactionType
                     },
                   })
                 }
@@ -151,10 +139,10 @@ const Banner = ({ accountref }: { accountref: string }) => {
                 <View className="flex flex-row items-center gap-3 w-[70%]">
                   <View
                     className={`p-2 rounded-full ${
-                      item?.type === 'D' ? 'bg-red-100' : 'bg-green-100'
+                      item?.transactionType !== 'CR' ? 'bg-red-100' : 'bg-green-100'
                     }`}
                   >
-                    {item?.type === 'D' ? (
+                    {item?.transactionType !== 'CR' ? (
                       <FontAwesome name="arrow-down" color="red" size={16} />
                     ) : (
                       <FontAwesome name="arrow-up" color="green" size={16} />
@@ -163,10 +151,10 @@ const Banner = ({ accountref }: { accountref: string }) => {
 
                   <View>
                     <Text className="text-[10px] font-medium text-gray-700">
-                      {item?.remarks || 'No description'}
+                      {item?.transactionType === 'Airtime' && 'Airtime Top up' || item?.transactionType === 'Data' && "Data Top up"  || item.transactionType === "CR" && `Transfer from ${item.counterparty.name}` || item.transactionType === "DB" && `Transfer to ${item.counterparty.name}` ||  'No description'} 
                     </Text>
                     <Text className="text-[10px] text-gray-500">
-                      {formatDate(item.date)}
+                      {formatDate(item?.date)}
                     </Text>
                   </View>
                 </View>
@@ -174,10 +162,10 @@ const Banner = ({ accountref }: { accountref: string }) => {
                 <View className="flex items-end justify-center w-[30%]">
                   <Text
                     className={`text-[12px] font-semibold ${
-                      item.type === 'C' ? 'text-green-500' : 'text-red-500'
+                      item.transactionType === 'CR' ? 'text-green-500' : 'text-red-500'
                     }`}
                   >
-                    {item.type === 'C' ? '+' : '-'}
+                    {item.transactionType === 'CR' ? '+' : '-'}
                     {formattedCurrency(item?.amount ?? 0)}
                   </Text>
                   <Text className="text-[10px] text-gray-500 font-medium">

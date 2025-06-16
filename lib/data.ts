@@ -9,7 +9,7 @@ export const bank = [
         id: 1,
         title: 'To Opay',
         icon: 'envelope-o',
-        to: '/bank-transfer'
+        to: '/opay-transfer'
     },
     {
         id: 2,
@@ -89,7 +89,7 @@ export const prefixToProvider = {
     },
     {
         id: 2,
-        name: '9Mobile',
+        name: 'etisalat',
         icon: mobile
     },
     {

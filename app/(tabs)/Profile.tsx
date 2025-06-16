@@ -1,18 +1,27 @@
-import { Image, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image, SafeAreaView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@clerk/clerk-expo';
 import avatar from '@/assets/images/avatar.png';
-import { useUserData } from '@/lib/zustand';
+import { storeBalance, useUserData } from '@/lib/zustand';
 import axios from 'axios';
 import { formattedCurrency } from '@/lib/data';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { router } from 'expo-router';
+import { getUserData } from '@/lib/storage';
+
+
+interface UserDataProps {
+  firstName: string;
+  lastName: string;
+  email: string
+}
 
 const Profile = () => {
   const { signOut } = useAuth();
-  const userData = useUserData((state) => state.data);
-  const [Balance, setBalance] = useState(0);
+  const [userData, setuserData] = useState<UserDataProps>()
 
+  const {balance } = storeBalance((state) => state)
+  
   const links = [
     { id: 1, name: 'Transaction History', path: '/transactions', icon: 'book' },
     { id: 2, name: 'Buy Data', path: '/data', icon: 'mobile-phone' },
@@ -20,42 +29,34 @@ const Profile = () => {
   ];
 
   useEffect(() => {
-    const getBalance = async () => {
-      if (userData.accountRef !== null) {
-        try {
-          const response = await axios.get(
-            `https://api.flutterwave.com/v3/payout-subaccounts/${userData.accountRef}/balances?currency=NGN`,
-            {
-              headers: {
-                Authorization: `Bearer FLWSECK-b775d93a3b14a0be4427b31a3f03cd4a-19461e011d9vt-X`,
-              },
-            }
-          );
-          const fetchedBalance = response.data.data.available_balance;
-          setBalance(fetchedBalance);
-        } catch (error) {
-          console.error('Error fetching balance:', error);
-        }
-      }
-    };
-    getBalance();
-  }, [userData.accountRef]);
+   const getUser = async () => {
+    const store = await getUserData();
 
+    // console.log(store)
+    setuserData(store)
+
+    // setUser
+   }
+
+   getUser();
+  }, [userData])
+  
+  
   const logout = async () => {
     await signOut();
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <View style={styles.profileInfo}>
           <Image source={avatar} style={styles.avatar} />
           <View style={styles.userDetails}>
-            <Text style={styles.userName}>{userData.firstName} {userData.lastName}</Text>
-            <Text style={styles.accountInfo}>{userData.accountNumber} / {userData.bankName}</Text>
+            <Text style={styles.userName}>{userData?.firstName} {userData?.lastName}</Text>
+            <Text style={styles.accountInfo}> {userData?.email}</Text>
           </View>
         </View>
-        <Text style={styles.balance}>{formattedCurrency(Balance)}</Text>
+        <Text style={styles.balance}>{formattedCurrency(balance)}</Text>
       </View>
 
       <View style={styles.separator} />
@@ -81,7 +82,7 @@ const Profile = () => {
       <TouchableOpacity onPress={logout} style={styles.logoutButton}>
         <Text style={styles.logoutText}>Logout</Text>
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -91,6 +92,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f9f9f9',
+    paddingTop: 23
   },
   header: {
     padding: 16,

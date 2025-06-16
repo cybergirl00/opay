@@ -18,6 +18,7 @@ const Layout = () => {
         <Stack.Screen name="transfer" options={{ headerShown: false }} />
         <Stack.Screen name="kyc" options={{ headerShown: false }} />
         <Stack.Screen name="loan" options={{ headerShown: false }} />
+        <Stack.Screen name='opay-transfer' options={{ headerShown: false}} />
       </Stack>
   );
 }
